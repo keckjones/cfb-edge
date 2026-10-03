@@ -345,9 +345,11 @@ function home() {
   h += `<h2 class="sec">TOP OFFICIAL PLAY <small>the model's best bet on the record this week</small></h2>` + topPlay();
   const gdg = D.gameday && D.gameday.gid ? G[D.gameday.gid] : null;
   if (gdg) h += `<h2 class="sec" style="color:#ff8c1a;text-shadow:0 0 12px rgba(255,140,26,.6)">COLLEGE GAMEDAY <small>ESPN's show is here this week${D.gameday.source === "ESPN" ? " (detected from ESPN's announcement)" : ""}</small></h2><div class="grid auto">${gameCard(gdg)}</div>`;
-  h += `<h2 class="sec">OFFICIAL MODEL PLAYS <small>${D.slip.length} play${D.slip.length === 1 ? "" : "s"} · every one passed EV, calibration, backtest, skeptic and injury checks</small></h2>`;
-  const off = D.games.filter(g => g.status === "official");
-  h += off.length ? `<div class="grid auto">${off.map(gameCard).join("")}</div>` : `<div class="empty">No game currently clears every betting criterion. That's the model saying "I don't know" - see <a href="#picks">why isn't this a bet?</a></div>`;
+  const topId = D.top_play ? D.top_play.gid + "|" + D.top_play.label : "";
+  const others = D.open_bets.filter(b => b.type === "single" && !b.now_note && new Date(b.kickoff) > Date.now()
+      && !(b.now_ev != null && b.now_ev <= 0) && b.gid + "|" + b.pick !== topId).map(b => G[b.gid]).filter(Boolean);
+  D.games.filter(g => g.status === "official" && !others.includes(g) && g.id !== (D.top_play || {}).gid).forEach(g => others.push(g));
+  if (others.length) h += `<h2 class="sec">MORE OFFICIAL PLAYS <small>${others.length} more · every one passed EV, calibration, backtest, skeptic and injury checks</small></h2><div class="grid auto">${others.map(g => gameCard(g)).join("")}</div>`;
   h += `<div class="grid g2" style="margin-top:6px"><div><h2 class="sec">MARKET MOVERS <small>open → now</small></h2>${moversBoard()}</div>
         <div><h2 class="sec">MODEL vs MARKET <small>biggest disagreements</small></h2>${disagreeBoard()}</div></div>`;
   h += `<div class="grid g2"><div><h2 class="sec">CFB EDGE TOP 10 <small>model-generated</small></h2>${powerMini()}</div><div><h2 class="sec">LIVE FEED <small>what changed</small></h2>${feed(12)}</div></div>`;
