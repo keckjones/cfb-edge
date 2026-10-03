@@ -104,7 +104,7 @@ h3{font:700 13px var(--tech);letter-spacing:.12em;color:var(--blue);margin:18px 
 .eotw .lbl{font:900 13px var(--tech);letter-spacing:.3em;color:var(--gold);text-shadow:var(--y-glow)}
 .eotw .pick{font:400 clamp(34px,6vw,58px)/1 var(--disp);letter-spacing:.04em;color:#fff;text-shadow:0 0 14px rgba(255,210,63,.6);margin:8px 0 2px}
 .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
-.kv div{background:rgba(0,0,0,.55);border:1px solid var(--edge2);border-radius:10px;padding:7px 10px}
+.kv>div{background:rgba(0,0,0,.55);border:1px solid var(--edge2);border-radius:10px;padding:7px 10px}
 .kv .k{font:700 9.5px var(--tech);letter-spacing:.12em;color:var(--dim)}.kv .v{font:800 18px var(--mono)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--blue);background:rgba(30,227,255,.08);color:var(--blue);font:700 12px var(--tech);letter-spacing:.08em;cursor:pointer}
 .btn:hover{box-shadow:var(--b-glow)}.btn.gold{border-color:var(--gold);color:#000;background:var(--gold)}.btn.ghost{border-color:var(--edge2);color:var(--ink);background:var(--panel)}
@@ -357,7 +357,7 @@ function eotw() {
    <div class="kv">
     <div><div class="k">CFB EDGE FAIR LINE</div><div class="v b">${esc(abbr(g.home))} ${fl(g.model.fair_spread)}</div></div>
     <div><div class="k">MARKET</div><div class="v w">${esc(abbr(g.home))} ${line(g.market.spread)}</div></div>
-    <div><div class="k">MODEL DIFFERENCE</div><div class="v g">${sgn(g.model.edge_spread)}</div></div>
+    <div><div class="k">MODEL VALUE (THIS BET)</div><div class="v g">${sgn(betValue(g, b))} pts</div></div>
     <div><div class="k">${b.market === "Total" ? "HIT" : "COVER"} PROBABILITY</div><div class="v w">${pct(b.p)}</div></div>
     <div><div class="k">EXPECTED VALUE</div><div class="v g">${spct(b.ev)}</div></div>
     <div><div class="k">PLAYABLE TO</div><div class="v y">${line(b.playable)}</div></div>
@@ -366,6 +366,8 @@ function eotw() {
    </div>
    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" data-g="${g.id}">VIEW FULL MATCHUP</button>${addBtn(g, b)}</div></div>`;
 }
+function betValue(g, b) { if (b.market === "Total") return (g.model.edge_total || 0) * (b.side === "over" ? 1 : -1);
+  return (g.model.edge_spread || 0) * (b.side === "home" ? 1 : -1); }
 function moversBoard() {
   if (!D.movers.length) return '<div class="empty small">No line has moved ≥0.5 since the open yet.</div>';
   return `<div class="panel board">${D.movers.map(m => `<div class="row" data-g="${m.id}"><span class="${m.delta > 0 ? "arrow-up" : "arrow-dn"}">${m.delta > 0 ? "▲" : "▼"}</span>
