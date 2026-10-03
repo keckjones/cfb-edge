@@ -381,8 +381,8 @@ function divBar(label, v, max, favor) { const w = Math.min(Math.abs(v) / max, 1)
 /* ---------- HOME ---------- */
 function home() {
   let h = "";
-  h += `<div class="feat-row" style="margin-top:16px">${gdCard()}${featCard()}</div>`;
   h += `<h2 class="sec">TOP OFFICIAL PLAY <small>the model's best bet on the record this week</small></h2>` + topPlay();
+  h += `<h2 class="sec" style="color:#ff9a3c">COLLEGE GAMEDAY <span style="color:var(--dim)">|</span> <span style="color:#fff;text-shadow:0 0 10px #8c1d2f">${esc(((D.featured || {}).team || "FEATURED").toUpperCase())} GAME</span></h2><div class="feat-row">${gdCard()}${featCard()}</div>`;
   const topId = D.top_play ? D.top_play.gid + "|" + D.top_play.label : "";
   const others = D.open_bets.filter(b => b.type === "single" && !b.now_note && new Date(b.kickoff) > Date.now()
       && !(b.now_ev != null && b.now_ev <= 0) && b.gid + "|" + b.pick !== topId).map(b => G[b.gid]).filter(Boolean);
@@ -928,8 +928,6 @@ function wireCard() {
 }
 function drawBuilder() {
   const box = $("#pbuilder"); box.innerHTML = builder();
-  box.querySelectorAll("input").forEach(inp => inp.oninput = () => { const v = {}; box.querySelectorAll("input").forEach(x => v[x.id || x.dataset.lo] = x.value);
-    box.innerHTML = builder(); box.querySelectorAll("input").forEach(x => { const key = x.id || x.dataset.lo; if (key in v) x.value = v[key]; }); drawBuilderWire(box); });
   drawBuilderWire(box);
 }
 function drawBuilderWire(box) {
@@ -1004,6 +1002,7 @@ const IDMAP = {}; Object.values(T).forEach(t => { if (t.id != null) IDMAP[String
 function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
   const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; }
 const Phi = x => 0.5 * (1 + erf(x / Math.SQRT2));
+function PhiInv(p) { p = Math.min(0.995, Math.max(0.005, p)); let lo = -4, hi = 4; for (let k = 0; k < 50; k++) { const m = (lo + hi) / 2; Phi(m) < p ? lo = m : hi = m; } return (lo + hi) / 2; }
 const nnum = v => { if (v == null) return null; const m = String(v).replace(/^[ou]/i, "").replace("EVEN", "+100").match(/[-+]?\d+(\.\d+)?/); return m ? +m[0] : null; };
 const normName = s => String(s || "").toLowerCase().replace(/[.'’]/g, "").replace(/\b(jr|sr|ii|iii|iv)\b/g, "").replace(/\s+/g, " ").trim();
 async function jget(u) { const r = await fetch(u, {cache: "no-store"}); if (!r.ok) throw new Error(r.status); return r.json(); }
@@ -1052,6 +1051,13 @@ async function liveSummary(id) {
   } catch (e) { return LV.sum[id] || null; }
 }
 function pregame(gs) {
+  // The backtest shows the pregame model does not beat closing lines, so the live model starts from a blend
+  // (70% DraftKings closing line, 30% CFB Edge). Live edges then have to come from what happens on the field.
+  const b = pregameModel(gs); if (!b) return null;
+  const o = gs.odds, cm = o && o.spH.close && o.spH.close.line != null ? -o.spH.close.line : null, ct = o && o.ov.close && o.ov.close.line != null ? o.ov.close.line : null;
+  return Object.assign({}, b, {modelMu: b.mu, modelT: b.t, mu: cm == null ? b.mu : 0.7 * cm + 0.3 * b.mu, t: ct == null ? b.t : 0.7 * ct + 0.3 * b.t, anchored: cm != null});
+}
+function pregameModel(gs) {
   const g = G[gs.id];
   if (g && g.model.fair_spread != null) { const hid = (T[g.home.school] || {}).id; const flip = String(hid) !== gs.home.id;
     return {mu: (flip ? 1 : -1) * g.model.fair_spread, t: g.model.fair_total, sig: g.model.sigma_m || 15.5, sigt: g.model.sigma_t || 16, src: "full model"}; }
@@ -1091,6 +1097,9 @@ function liveEdges(gs, lm, pre) {
   if (o.mlH.live && o.mlA.live) { cands.push({mk: "Moneyline", label: `${home} ML`, price: o.mlH.live.odds, p: lm.wp, gap: lm.mu, modelLine: `${pct(lm.wp)} win`, mline: odds(o.mlH.live.odds), close: o.mlH.close});
     cands.push({mk: "Moneyline", label: `${away} ML`, price: o.mlA.live.odds, p: 1 - lm.wp, gap: -lm.mu, modelLine: `${pct(1 - lm.wp)} win`, mline: odds(o.mlA.live.odds), close: o.mlA.close}); }
   const espn = gs.espnWP;
+  // Market sanity: ESPN relays DraftKings' live board, which is often suspended or a step behind the game.
+  // A live line is used only if it agrees with ESPN's own live win probability (an independent read of the same game).
+  const espnMu = espn == null ? null : PhiInv(espn) * lm.sig;
   for (const c of cands) {
     if (c.price == null) continue;
     c.ev = c.p * dec(c.price) - 1;
@@ -1098,10 +1107,15 @@ function liveEdges(gs, lm, pre) {
     if (lm.elapsed < 5) why.push("too early - pregame model still dominates");
     if (lm.rem < 8) why.push("final minutes - too volatile");
     if (Math.abs(lm.M) > 24) why.push("blowout");
-    if (c.ev < 0.05) why.push("EV below 5%");
-    if (c.p < 0.55) why.push("win chance below 55%");
-    if (c.mk !== "Moneyline" && Math.abs(c.gap) < 3) why.push("model within 3 pts of the live line");
+    if (c.ev < 0.08) why.push("EV below 8%");
+    if (c.p < 0.57) why.push("win chance below 57%");
+    if (c.mk !== "Moneyline" && Math.abs(c.gap) < (c.mk === "Total" ? 5 : 4)) why.push("model too close to the live line");
     if (c.mk === "Moneyline" && (c.p < 0.25 || c.p > 0.8)) why.push("moneyline price too extreme");
+    if (c.mk === "Spread" && espnMu != null && sl && Math.abs(espnMu + sl.line) > Math.max(4, 0.5 * lm.sig)) why.push("live line out of sync with the game (suspended or stale)");
+    if (c.mk === "Moneyline" && espn != null) { const oth = c.label.startsWith(home) ? o.mlA.live : o.mlH.live, pi = 1 / dec(c.price), po = oth && oth.odds != null ? 1 / dec(oth.odds) : null;
+      const nv = po ? pi / (pi + po) : pi, es = c.label.startsWith(home) ? espn : 1 - espn; if (Math.abs(nv - es) > 0.12) why.push("live price out of sync with the game (suspended or stale)"); }
+    if (c.mk !== "Moneyline" && Math.abs(c.gap) > (c.mk === "Total" ? lm.sigT : lm.sig)) why.push("gap bigger than the model's own uncertainty - model is likely missing something");
+    if (c.ev > 0.25) why.push("EV too large to be real - likely a stale line");
     const wpSide = c.mk === "Moneyline" ? (c.label.startsWith(home) ? espn : espn == null ? null : 1 - espn) : null;
     const agreeWP = espn == null ? null : Math.abs(lm.wp - espn);
     if (agreeWP != null && agreeWP > 0.15) why.push("ESPN's live model disagrees by " + pct(agreeWP, 0));
@@ -1116,7 +1130,7 @@ function liveEdges(gs, lm, pre) {
     if (c.ok && !LV.firstSeen[key]) { LV.firstSeen[key] = {t: Date.now(), sit: `${gs.away.abbr} ${gs.away.score} - ${gs.home.abbr} ${gs.home.score}, ${gs.detail}`}; LS.set("liveFirst", LV.firstSeen); }
     c.first = LV.firstSeen[key];
     const cl = c.close ? (c.mk === "Moneyline" ? odds(c.close.odds) : (c.mk === "Total" ? "O/U " + c.close.line : line(c.close.line))) : "–";
-    c.reason = `Pregame ${pre.src}: ${home} ${fl(-pre.mu)}, total ${num(pre.t)}. In-game evidence (${Math.round(lm.w * 100)}% weight: yardage ${lm.sh ? lm.sh.yds + "-" + lm.sa.yds : "n/a"}, score ${gs.home.score}-${gs.away.score}${lm.ep ? ", current possession" : ""}) projects ${home} ${fl(-lm.mu)} / total ${num(lm.muT)}. Market moved from pregame ${cl} to ${c.mline}.`;
+    c.reason = `Pregame start (${pre.anchored ? "70% closing line + 30% " + pre.src : pre.src}): ${home} ${fl(-pre.mu)}, total ${num(pre.t)}. In-game evidence (${Math.round(lm.w * 100)}% weight: yardage ${lm.sh ? lm.sh.yds + "-" + lm.sa.yds : "n/a"}, score ${gs.home.score}-${gs.away.score}${lm.ep ? ", current possession" : ""}) projects ${home} ${fl(-lm.mu)} / total ${num(lm.muT)}. Market moved from pregame ${cl} to ${c.mline}.`;
     c.gs = gs; c.lm = lm; out.push(c);
   }
   return out;
@@ -1146,7 +1160,7 @@ async function fillSlots() {
 /* ---------- GAMEDAY LIVE tab ---------- */
 function liveView() {
   return `<h2 class="sec" style="color:var(--green);text-shadow:var(--g-glow)">● GAMEDAY LIVE <small>scores, live lines and the live model refresh every 30 seconds · <span id="liveStamp">loading…</span></small></h2>
-   <div class="panel small muted">Live data: ESPN's public scoreboard and DraftKings live lines. The live model starts from the pregame CFB Edge projection and blends in score, time, possession & field position, yardage efficiency, turnovers and pace (in-game evidence weight grows with time, up to 50%). A live bet is shown only if EV ≥ 5%, win chance ≥ 55%, the model is ≥ 3 pts off the live line, ESPN's own live win probability agrees within 15 points, and it's not the opening minutes, the final 8 minutes, or a blowout. <b class="o">Experimental - the live model is not backtested.</b> Team totals and live player props have no free live feed, so they're not priced.</div>
+   <div class="panel small muted">Live data: ESPN's public scoreboard and DraftKings live lines. The live model starts from a pregame number (70% closing line + 30% CFB Edge, because the backtest shows the model doesn't beat closing lines on its own) and blends in score, time, possession & field position, yardage efficiency, turnovers and pace (in-game evidence weight grows with time, up to 50%). A live bet is shown only if EV ≥ 8%, win chance ≥ 57%, the model is ≥ 4 pts off the live spread (5 on totals), the live line is in sync with the game, ESPN's own live win probability agrees within 15 points, and it's not the opening minutes, the final 8 minutes, or a blowout. <b class="o">Experimental - the live model is not backtested.</b> Team totals and live player props have no free live feed, so they're not priced.</div>
    <h3>⚡ LIVE BETTING OPPORTUNITIES</h3><div id="liveOpps"><div class="empty">Loading live games…</div></div>
    <h3>LIVE NOW</h3><div id="liveGames" class="grid auto"></div>
    <h3>STARTING SOON</h3><div id="liveSoon" class="grid auto"></div>
@@ -1169,7 +1183,7 @@ async function renderLive() {
        <div class="h">SPREAD</div>${o ? cell(o.spH.live, o.spH.close, spF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? fl(-lm.mu) : "–"}</div>
        <div class="h">TOTAL</div>${o ? cell(o.ov.live, o.ov.close, totF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? num(lm.muT) : "–"}</div>
        <div class="h">MONEYLINE</div>${o ? cell(o.mlH.live, o.mlH.close, mlF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? pct(lm.wp) : "–"}</div></div>
-      ${lm ? `<div class="mono small" style="margin-top:6px">Projected final: <b>${esc(gs.away.abbr)} ${num(lm.projA, 0)} - ${esc(gs.home.abbr)} ${num(lm.projH, 0)}</b> · ${esc(gs.home.abbr)} win ${pct(lm.wp)}${gs.espnWP != null ? ` (ESPN ${pct(gs.espnWP)})` : ""} · pregame from ${esc(pre.src)}</div>` :
+      ${lm ? `<div class="mono small" style="margin-top:6px">Projected final: <b>${esc(gs.away.abbr)} ${num(lm.projA, 0)} - ${esc(gs.home.abbr)} ${num(lm.projH, 0)}</b> · ${esc(gs.home.abbr)} win ${pct(lm.wp)}${gs.espnWP != null ? ` (ESPN ${pct(gs.espnWP)})` : ""} · pregame start: ${pre.anchored ? "70% closing line + 30% " : ""}${esc(pre.src)}</div>` :
         '<div class="tiny muted" style="margin-top:6px">No pregame CFB Edge projection for this matchup (FCS opponent) - live model off.</div>'}
       ${e.filter(c => c.ok).map(c => `<div class="chip official" style="margin-top:6px">⚡ ${esc(c.label)} ${odds(c.price)} · EV ${spct(c.ev)}</div>`).join("")}</div>`);
   });
