@@ -1066,14 +1066,14 @@ function pregameModel(gs) {
   const n = M.n, neu = (LV.board || []).find(b => b.id === gs.id)?.neutral;
   return {mu: (neu ? M.neutral_margin : M.home_margin)[i * n + j] / 10, t: (neu ? M.neutral_total : M.home_total)[i * n + j] / 10, sig: M.sigma_m, sigt: M.sigma_t, src: "stats model"};
 }
-function liveModel(gs, pre) {
+function liveModel(gs, pre, wOverride) {
   if (!pre) return null;
   const P = gs.period || 1, cm = String(gs.clock || "15:00").split(":"), clk = (+cm[0] || 0) + (+cm[1] || 0) / 60;
   const elapsed = gs.state === "post" ? 60 : P > 4 ? 60 : Math.min(60, (P - 1) * 15 + (15 - clk));
   const rem = gs.state === "post" ? 0 : P > 4 ? 4 : Math.max(0, 60 - elapsed), f = rem / 60;
   const H = gs.home.score, A = gs.away.score, M = H - A, PT = H + A;
   const sh = gs.stats[gs.home.id], sa = gs.stats[gs.away.id];
-  const w = Math.min(0.5, (elapsed / 60) * 0.6);                 // weight on in-game evidence grows with time
+  const w = wOverride != null ? wOverride : Math.min(0.5, (elapsed / 60) * 0.6);                 // weight on in-game evidence grows with time
   let obsM = elapsed > 3 ? M / elapsed : pre.mu / 60, obsT = elapsed > 3 ? PT / elapsed : pre.t / 60;
   if (sh && sa && elapsed > 3) {                                  // process: yardage (~13.5 yds per point), ignores turnover luck
     obsM = 0.6 * ((sh.yds - sa.yds) / 13.5) / elapsed + 0.4 * obsM;
@@ -1100,6 +1100,7 @@ function liveEdges(gs, lm, pre) {
   // Market sanity: ESPN relays DraftKings' live board, which is often suspended or a step behind the game.
   // A live line is used only if it agrees with ESPN's own live win probability (an independent read of the same game).
   const espnMu = espn == null ? null : PhiInv(espn) * lm.sig;
+  const lm0 = liveModel(gs, pre, 0);   // same projection with no in-game evidence: score, clock and possession only
   for (const c of cands) {
     if (c.price == null) continue;
     c.ev = c.p * dec(c.price) - 1;
@@ -1115,6 +1116,8 @@ function liveEdges(gs, lm, pre) {
     if (c.mk === "Moneyline" && espn != null) { const oth = c.label.startsWith(home) ? o.mlA.live : o.mlH.live, pi = 1 / dec(c.price), po = oth && oth.odds != null ? 1 / dec(oth.odds) : null;
       const nv = po ? pi / (pi + po) : pi, es = c.label.startsWith(home) ? espn : 1 - espn; if (Math.abs(nv - es) > 0.12) why.push("live price out of sync with the game (suspended or stale)"); }
     if (c.mk !== "Moneyline" && Math.abs(c.gap) > (c.mk === "Total" ? lm.sigT : lm.sig)) why.push("gap bigger than the model's own uncertainty - model is likely missing something");
+    if (c.mk !== "Moneyline") { const shift = c.mk === "Total" ? lm.muT - lm0.muT : lm.mu - lm0.mu, dir = Math.sign(c.gap) * (c.mk === "Total" ? (c.label.startsWith("Over") ? 1 : -1) : (c.label.startsWith(home) ? 1 : -1));
+      if (Math.sign(shift) !== dir || Math.abs(shift) < 0.5 * Math.abs(c.gap)) why.push("edge comes from the pregame number, not from what's happening in the game"); }
     if (c.ev > 0.25) why.push("EV too large to be real - likely a stale line");
     const wpSide = c.mk === "Moneyline" ? (c.label.startsWith(home) ? espn : espn == null ? null : 1 - espn) : null;
     const agreeWP = espn == null ? null : Math.abs(lm.wp - espn);
@@ -1160,7 +1163,7 @@ async function fillSlots() {
 /* ---------- GAMEDAY LIVE tab ---------- */
 function liveView() {
   return `<h2 class="sec" style="color:var(--green);text-shadow:var(--g-glow)">● GAMEDAY LIVE <small>scores, live lines and the live model refresh every 30 seconds · <span id="liveStamp">loading…</span></small></h2>
-   <div class="panel small muted">Live data: ESPN's public scoreboard and DraftKings live lines. The live model starts from a pregame number (70% closing line + 30% CFB Edge, because the backtest shows the model doesn't beat closing lines on its own) and blends in score, time, possession & field position, yardage efficiency, turnovers and pace (in-game evidence weight grows with time, up to 50%). A live bet is shown only if EV ≥ 8%, win chance ≥ 57%, the model is ≥ 4 pts off the live spread (5 on totals), the live line is in sync with the game, ESPN's own live win probability agrees within 15 points, and it's not the opening minutes, the final 8 minutes, or a blowout. <b class="o">Experimental - the live model is not backtested.</b> Team totals and live player props have no free live feed, so they're not priced.</div>
+   <div class="panel small muted">Live data: ESPN's public scoreboard and DraftKings live lines. The live model starts from a pregame number (70% closing line + 30% CFB Edge, because the backtest shows the model doesn't beat closing lines on its own) and blends in score, time, possession & field position, yardage efficiency, turnovers and pace (in-game evidence weight grows with time, up to 50%). A live bet is shown only if EV ≥ 8%, win chance ≥ 57%, the model is ≥ 4 pts off the live spread (5 on totals), the live line is in sync with the game, at least half the edge comes from in-game evidence (not the pregame number), ESPN's own live win probability agrees within 15 points, and it's not the opening minutes, the final 8 minutes, or a blowout. <b class="o">Experimental - the live model is not backtested.</b> Team totals and live player props have no free live feed, so they're not priced.</div>
    <h3>⚡ LIVE BETTING OPPORTUNITIES</h3><div id="liveOpps"><div class="empty">Loading live games…</div></div>
    <h3>LIVE NOW</h3><div id="liveGames" class="grid auto"></div>
    <h3>STARTING SOON</h3><div id="liveSoon" class="grid auto"></div>
