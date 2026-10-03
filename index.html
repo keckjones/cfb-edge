@@ -947,7 +947,7 @@ function addToCard(gid, label, units) { const c = LS.get("card", []); if (!c.som
   const b = (g && g.bets.find(x => x.label === label)) || (pp ? {price: pp.price, point: pp.line} : null);
   const gb = g && g.bets.find(x => x.label === label), src = pp || gb || D.open_bets.find(x => x.gid === gid && x.pick === label) || {};
   const e = {gid, label, units, price: b ? b.price : (src.price ?? null), point: b ? b.point : (src.point ?? null), added: new Date().toISOString(),
-    stake: units * D.meta.unit, ev: src.ev ?? null, conf: src.conf ?? src.confidence ?? null, edge: pp ? +(pp.proj - pp.line).toFixed(1) : (src.edge_pts ?? null),
+    stake: units * D.meta.unit, ev: src.ev ?? null, conf: src.conf ?? src.confidence ?? null, edge: pp ? +((pp.side === "over" ? 1 : -1) * (pp.proj - pp.line)).toFixed(1) : (src.edge_pts ?? null),
     game: g ? `${g.away.school} @ ${g.home.school}` : (src.game || "")};
   if (pp) Object.assign(e, {type: "prop", player: pp.player, stat: pp.stat, side: pp.side, line: pp.line, team: pp.team, proj: pp.proj});
   else Object.assign(e, cardMeta(gid, label, b));
@@ -1073,7 +1073,29 @@ function labView() {
     <div><h3>SKEPTIC FLAGS (with vs without)</h3><div class="tw"><table><thead><tr><th>Flag</th><th>With</th><th>ROI</th></tr></thead><tbody>${L.flags.filter(f => f["Flag present"] === "yes").map(f => `<tr><td>${esc(f.Flag)}</td><td class="mono">${f.Bets}</td><td class="mono ${clsv(f.ROI)}">${spct(f.ROI)}</td></tr>`).join("")}</tbody></table></div>
     <div class="tiny muted">Kalman/HMM effectiveness = the "quant" and "hidden" rows above.</div></div></div>`;
 }
-function evoView() { return `<h2 class="sec">CFB EDGE EVOLUTION <small>every change, why, and what testing showed</small></h2>
+function learnBlock() {
+  const E = D.evolution_stats || {}, P = E.projection || {}, pr = (E.props || {}).stat_error || {}, ratios = (E.props || {}).stat_ratio || {};
+  const tbl = (title, obj) => { const rows = Object.entries(obj || {}); if (!rows.length) return "";
+    return `<div class="panel"><b class="tech y">${title}</b><div class="tw"><table><thead><tr><th>Bucket</th><th>Record</th><th>Win %</th><th>Units</th><th>ROI</th><th>Avg CLV</th></tr></thead><tbody>${rows.map(([k, a]) =>
+      `<tr><td>${esc(k)}</td><td>${a.w}-${a.l}${a.p ? "-" + a.p : ""}</td><td>${pct(a.win)}</td><td class="${clsv(a.units)}">${sgn(a.units, 2)}</td><td class="${clsv(a.roi)}">${spct(a.roi)}</td><td>${a.clv == null ? "–" : sgn(a.clv)}</td></tr>`).join("")}</tbody></table></div></div>`; };
+  let h = `<h2 class="sec">HOW THE MODEL IS LEARNING <small>graded results feed back into the rules - slowly, and only with real samples</small></h2>
+   <div class="panel small"><b class="g">Rules for learning.</b> Game projections improve through the walk-forward retrain (every completed game becomes training data, every ${D.meta.retrain_days || 4} days).
+   A situation (bet type × confidence range, edge size, side or weather) is <b>blocked</b> from Official Plays only after ${E.min_block_n || 60}+ graded bets significantly below break-even (z < −2), and it's unblocked automatically when that's no longer true.
+   Player-prop projections get a per-stat bias correction only after 40+ graded props show a clear bias. <b>A win never raises confidence and a loss never lowers it</b>; only projection error and large-sample results count.
+   Live bets live in each viewer's browser, so they can't be graded centrally yet.</div>
+   <div class="stats">${[["", P.n || 0, "Games graded vs projection"], ["b", P.spread_mae ?? "–", "Model spread error (MAE)"], ["", P.vegas_spread_mae ?? "–", "Vegas spread error (MAE)"],
+     ["b", P.total_mae ?? "–", "Model total error (MAE)"], ["", P.vegas_total_mae ?? "–", "Vegas total error (MAE)"], ["g", P.closer_than_vegas == null ? "–" : pct(P.closer_than_vegas, 0), "Model closer than Vegas"]]
+     .map(([c, v, k]) => `<div class="stat ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("")}</div>
+   ${P.n ? `<div class="small muted">Bias: the model's spread errs by ${sgn(P.spread_bias)} pts on average (home margin), totals by ${sgn(P.total_bias)}. Lower error than Vegas over a large sample is the real goal.</div>` : '<div class="empty small">Projection accuracy appears as priced games go final.</div>'}
+   <div class="panel"><b class="tech y">LEARNED GUARDRAILS</b> ${(E.blocked || []).length ? (E.blocked).map(b => `<div class="chip bad">${esc(b.market)} · ${esc(b.bucket)}: ${pct(b.win, 0)} over ${b.n} (z ${b.z})</div>`).join("") : `<span class="muted small">None active. ${E.graded || 0} official plays graded so far, and a situation needs ${E.min_block_n || 60}+ to be judged.</span>`}</div>`;
+  h += E.graded ? `<div class="grid g2">${tbl("BY BET TYPE", E.by_type)}${tbl("BY CONFIDENCE RANGE", E.by_conf)}${tbl("BY EDGE SIZE (EV)", E.by_edge)}${tbl("BY SIDE (HOME / ROAD / OVER / UNDER)", E.by_side)}${tbl("BY WEATHER", E.by_weather)}${tbl("BY CONFERENCE", E.by_conference)}</div>
+     ${(E.by_team || []).length ? tbl("BY TEAM (2+ bets)", Object.fromEntries(E.by_team.map(t => [t.team, t]))) : ""}` : '<div class="empty small">Breakdowns by bet type, conference, team, confidence, edge size, weather and home/away appear once official plays are graded.</div>';
+  const ps = Object.entries(pr);
+  h += `<div class="panel"><b class="tech y">PLAYER-PROP PROJECTION ERROR</b>${ps.length ? `<div class="tw"><table><thead><tr><th>Stat</th><th>Graded</th><th>Avg miss</th><th>Bias (actual − proj)</th><th>Learned correction</th></tr></thead><tbody>${ps.map(([k, v]) =>
+     `<tr><td>${esc(PROP_NAMES_JS[k] || k)}</td><td>${v.n}</td><td>${v.mae}</td><td class="${clsv(v.bias)}">${sgn(v.bias)}</td><td>${ratios[k] ? "×" + ratios[k] : "none yet"}</td></tr>`).join("")}</tbody></table></div>` : ' <span class="muted small">Appears as official props are graded.</span>'}</div>`;
+  return h;
+}
+function evoView() { return learnBlock() + `<h2 class="sec">CFB EDGE EVOLUTION <small>every change, why, and what testing showed</small></h2>
   <div class="panel">${D.evolution.slice().reverse().map(e => `<div style="display:grid;grid-template-columns:90px 1fr;gap:12px;padding:10px 0;border-bottom:1px dashed var(--edge)"><div><div class="tech y" style="font-size:18px">v${esc(e.version)}</div><div class="tiny muted">${esc(e.date)}</div></div>
    <div><b class="w">${esc(e.title)}</b><div class="small"><span class="b">Change:</span> ${esc(e.change)}</div><div class="small"><span class="p">Why:</span> ${esc(e.reason)}</div><div class="small"><span class="g">Test result:</span> ${esc(e.impact)}</div></div></div>`).join("")}</div>`; }
 
@@ -1225,7 +1247,7 @@ function liveEdges(gs, lm, pre) {
 const tName = t => t.name || t.abbr;
 const favLine = (h, gs) => h == null ? "–" : h === 0 ? "PICK" : h < 0 ? `${gs.home.abbr} ${line(h)}` : `${gs.away.abbr} ${line(-h)}`;
 const fairOdds = p => p == null ? "–" : odds(amer(1 / Math.min(0.99, Math.max(0.01, p))));
-const clockTxt = gs => gs.state === "post" ? "FINAL" : gs.state === "pre" ? fmtTime(gs.start) : gs.period > 4 ? "OT " + (gs.clock || "") : `Q${gs.period} · ${gs.clock || ""}`;
+const clockTxt = gs => gs.state === "post" ? "FINAL" : gs.state === "pre" ? fmtTime(gs.start) : (gs.clock === "0:00" && gs.detail) ? String(gs.detail).toUpperCase() : gs.period > 4 ? "OT " + (gs.clock || "") : `Q${gs.period} · ${gs.clock || ""}`;
 function liveCalc(gs) {
   const pre = pregame(gs), lm = liveModel(gs, pre), lm0 = lm ? liveModel(gs, pre, 0) : null, all = lm ? liveEdges(gs, lm, pre) : [];
   const ok = all.filter(c => c.ok).sort((a, b) => b.ev - a.ev);
@@ -1592,7 +1614,7 @@ function officialPropCard(x, big) {
      <div class="tiny tech muted">PLAYER</div><div style="font:800 ${big ? 26 : 19}px Inter;color:#fff">${esc(x.player)}</div><div class="muted small">${esc(x.team)} vs ${esc(x.opp)}</div></div>${confRing(x.conf, big ? 86 : 64)}</div>
     <div style="margin:8px 0 2px;font:400 ${big ? 40 : 28}px/1.05 var(--disp);letter-spacing:.04em;color:var(--gold)">${x.side === "over" ? "OVER" : "UNDER"} ${x.line} ${esc(x.prop.toUpperCase())}</div>
     <div class="lines"><div><div class="k">SPORTSBOOK</div><div class="v w">${x.line} (${odds(x.price)}) · ${esc(x.book)}</div></div><div><div class="k">MODEL PROJECTION</div><div class="v b">${num(x.proj)}</div></div>
-     <div><div class="k">MODEL EDGE</div><div class="v g">${sgn(x.proj - x.line)} ${esc(PROP_UNIT[x.stat] || "")}</div></div></div>
+     <div><div class="k">MODEL EDGE</div><div class="v g">${sgn((x.side === "over" ? 1 : -1) * (x.proj - x.line))} ${esc(PROP_UNIT[x.stat] || "")} ${x.side === "over" ? "over" : "under"} the line</div></div></div>
     <div class="lines"><div><div class="k">WIN CHANCE</div><div class="v">${pct(x.p)}</div></div><div><div class="k">EV</div><div class="v g">${spct(x.ev)}</div></div><div><div class="k">CONFIDENCE</div><div class="v" style="color:${confColor(x.conf)}">${x.conf}</div></div></div>
     ${qualHTML(x.checks)}${trkSlot(propMeta(x))}
     <div style="margin-top:8px">${addBtnRaw(x.gid, propLabel(x), 0.5)}</div></div>`;
