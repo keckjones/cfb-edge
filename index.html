@@ -358,6 +358,11 @@ function topPlay() {
   const t = D.top_play;
   if (!t) return '<div class="empty">No official play this week: no game clears every betting rule, so the model is passing. See <a href="#picks">why isn\'t this a bet?</a></div>';
   const g = G[t.gid], nowEv = t.now_ev != null ? t.now_ev : t.ev;
+  if (t.conf == null && g) {           // bets logged before confidence existed: use today's computed confidence for that side
+    const team = t.label.split(" ").slice(0, -1).join(" ");
+    const cb = g.bets.find(b => b.market !== "Moneyline" && b.label.startsWith(team));
+    if (cb) t.conf = cb.conf;
+  }
   const tm = g ? (t.label.startsWith(g.home_name) ? g.home : t.label.startsWith(g.away_name) ? g.away : g.home) : null;
   const cur = g ? curPoint(g, {market: /^(Over|Under)/.test(t.label) ? "Total" : "Spread", pick: t.label}) : null;
   const shrinking = nowEv != null && nowEv < D.meta.min_ev;
