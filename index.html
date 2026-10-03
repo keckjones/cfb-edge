@@ -417,7 +417,8 @@ function ticker() {
 function header() {
   const m = D.meta, perf = D.performance, h = D.model_health;
   $("#status").innerHTML = `<div class="live"><span class="dot"></span>MODEL STATUS: ${esc(m.status)}</div>
-    <div class="row">Last model update <b>${esc(fmtClock(m.updated))}</b></div>
+    <div class="row">Last model update <b>${esc(fmtClock(m.model_run || m.updated))}</b></div>
+    ${m.refreshed ? `<div class="row">Results &amp; stats updated <b>${esc(fmtClock(m.refreshed))}</b></div>` : ""}
     <div class="row">Last retrain <b>${esc(new Date(m.trained).toLocaleDateString([], {month: "short", day: "numeric"}))}</b></div>
     <div class="row">Games analyzed <b>${m.games_analyzed.toLocaleString()}</b></div>
     <div class="row">Version <b>${esc(m.version)}</b></div>`;
