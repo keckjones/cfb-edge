@@ -262,6 +262,20 @@ details.how summary{cursor:pointer;font:700 12px var(--tech);letter-spacing:.12e
 .lv-add{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .lv-add .btn{padding:3px 9px;font-size:10.5px}
 @media (max-width:760px){.q{grid-template-columns:20px 1fr}.q .qv{grid-column:2}.home-hero .trk.big .lv-row .sc{font-size:44px}}
+.hero{position:relative}
+.mycard-btn{position:absolute;top:14px;right:300px;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;cursor:pointer;
+  background:linear-gradient(135deg,#ff2e88,#ff5fb0);color:#fff;font:900 15px var(--tech);letter-spacing:.14em;border:2px solid #ffb3d6;
+  box-shadow:0 0 18px rgba(255,46,136,.75),0 0 40px rgba(255,46,136,.35);text-decoration:none;z-index:5;animation:mcglow 2.4s ease-in-out infinite}
+.mycard-btn:hover{transform:translateY(-1px);box-shadow:0 0 26px rgba(255,46,136,.95),0 0 60px rgba(255,46,136,.45)}
+.mycard-btn .n{background:#fff;color:#ff2e88;border-radius:999px;padding:1px 8px;font-size:13px}
+@keyframes mcglow{50%{box-shadow:0 0 26px rgba(255,46,136,.95),0 0 54px rgba(255,46,136,.45)}}
+.bnav button.mc{color:#ff5fb0}.bnav button.mc.on{color:#fff;text-shadow:0 0 10px #ff2e88}
+.bnav .bn{display:inline-block;min-width:16px;padding:0 4px;margin-left:3px;border-radius:8px;background:#ff2e88;color:#fff;font-size:9.5px}
+.chip.userpick{color:#ff5fb0;border-color:#ff5fb0}
+.offnote{font:600 11.5px var(--mono);color:var(--dim);margin-top:4px}.offnote b{color:#ff9ac6}
+.addgame{padding:3px 10px;font-size:10px}
+@media (max-width:1100px){.mycard-btn{right:16px;top:auto;bottom:-6px;position:relative;margin-top:10px}}
+@media (max-width:760px){.mycard-btn{display:none}}
 footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
 @media (max-width:960px){.stats{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}}
 @media (max-width:680px){.hero{grid-template-columns:1fr}.status{min-width:0}.stats{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4{grid-template-columns:1fr}
@@ -276,6 +290,7 @@ footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
 <div class="wrap">
   <header class="hero">
     <div class="brand"><h1>CFB EDGE</h1><div class="sub">COLLEGE FOOTBALL MARKET INTELLIGENCE</div></div>
+    <a class="mycard-btn" href="#card" id="mcbtn">🎟 MY CARD <span class="n" id="mcCount"></span></a>
     <div class="status" id="status"></div>
   </header>
   <div class="stats" id="stats"></div>
@@ -390,9 +405,11 @@ const VIEWS = [["home", "HOME", "⌂"], ["picks", "PICKS", "★"], ["props", "PL
 function nav() {
   const r = route().v, card = LS.get("card", []);
   $("#tabs").innerHTML = `<button class="tab gd ${r === "live" ? "on" : ""}" data-v="live">● GAMEDAY LIVE</button>` +
-    VIEWS.map(([k, n]) => `<button class="tab ${r === k ? "on" : ""}" data-v="${k}">${n}${k === "card" && card.length ? `<span class="badge-n">${card.length}</span>` : ""}</button>`).join("");
-  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["live", "LIVE", "●"], ["picks", "PICKS", "★"], ["props", "PROPS", "◎"], ["card", "CARD", "▤"], ["model", "MODEL", "◉"]]
-    .map(([k, n, i]) => `<button class="${r === k ? "on" : ""}" data-v="${k}"><i>${i}</i>${n}</button>`).join("");
+    VIEWS.filter(([k]) => k !== "card").map(([k, n]) => `<button class="tab ${r === k ? "on" : ""}" data-v="${k}">${n}</button>`).join("");
+  const n = card.length + LS.get("parlays", []).length;
+  $("#mcCount").textContent = n ? n : ""; $("#mcCount").style.display = n ? "" : "none";
+  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["live", "LIVE", "●"], ["card", "MY CARD", "🎟"], ["picks", "PICKS", "★"], ["props", "PROPS", "◎"], ["model", "MODEL", "◉"]]
+    .map(([k, nm, i]) => `<button class="${r === k ? "on" : ""} ${k === "card" ? "mc" : ""}" data-v="${k}"><i>${i}</i>${nm}${k === "card" && n ? `<span class="bn">${n}</span>` : ""}</button>`).join("");
   document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { location.hash = b.dataset.v; });
 }
 function route() { const h = decodeURIComponent(location.hash.slice(1) || "home"); const [v, ...rest] = h.split("/"); return {v, arg: rest.join("/")}; }
@@ -414,7 +431,8 @@ function gameCard(g, mkt) {
     <div class="small" style="margin-top:7px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
       <span>${t ? `<b class="${t.status === "official" ? "y" : t.status === "strong" ? "g" : ""}">${esc(t.label)}</b> <span class="muted">${odds(t.price)} · EV ${spct(t.ev)}</span>` : '<span class="muted">No priced bet</span>'}</span>
       <span class="muted">${esc(abbr(g.home))} win ${pct(g.model.win_home, 0)}</span></div>${extra}
-    ${t && t.conf != null ? `<div class="confbar" title="Model confidence ${t.conf}/100"><i style="width:${t.conf}%"></i></div>` : ""}</div>`;
+    ${t && t.conf != null ? `<div class="confbar" title="Model confidence ${t.conf}/100"><i style="width:${t.conf}%"></i></div>` : ""}
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${t ? addBtnRaw(g.id, t.label, t.status === "official" ? 1 : .5, true) : ""}${gameAddBtn(g.id, `${g.away.school} @ ${g.home.school}`)}</div></div>`;
 }
 const abbr = t => t.abbr || t.school;
 function wire(root) { root.querySelectorAll("[data-g]").forEach(el => el.addEventListener("click", e => { e.stopPropagation(); openGame(el.dataset.g); }));
@@ -452,15 +470,15 @@ function home() {
   const heroMeta = tp ? (tpG ? {gid: tp.gid, label: tp.label, ...cardMeta(tp.gid, tp.label, null)} : ledgerMeta({gid: tp.gid, pick: tp.label, market: /^(Over|Under)/.test(tp.label) ? "Total" : "Spread", bet_side: /^Over/.test(tp.label) ? "over" : "under", point: +tp.label.split(" ").pop()})) : heroProp ? propMeta(heroProp) : null;
   h += `<h2 class="sec">★ OFFICIAL PLAY <small>${tp || heroProp ? "the model's best bet - it turns into a live tracker at kickoff" : "the model only names an Official Play when every check passes"}</small></h2>
     <div class="home-hero">${heroMeta && !STALE ? trkSlot(heroMeta, true) : ""}<div class="hero-pre">${heroProp ? officialPropCard(heroProp, true) : topPlay()}</div></div>`;
-  h += `<h2 class="sec sub" style="color:#ff9a3c">COLLEGE GAMEDAY <span style="color:var(--dim)">|</span> <span style="color:#fff;text-shadow:0 0 10px #8c1d2f">${esc(((D.featured || {}).team || "FEATURED").toUpperCase())} GAME</span></h2><div class="feat-row">${gdCard()}${featCard()}</div>`;
   const topId = D.top_play ? D.top_play.gid + "|" + D.top_play.label : "";
   const recent = b => new Date(b.kickoff) > Date.now() - 5 * 3600e3;          // keep started games on screen (live tracking)
   const ob = STALE ? [] : D.open_bets.filter(b => b.type === "single" && !b.now_note && recent(b) && !(b.now_ev != null && b.now_ev <= 0 && new Date(b.kickoff) > Date.now()) && b.gid + "|" + b.pick !== topId);
-  const cards = ob.map(b => G[b.gid] ? withTrack(gameCard(G[b.gid]), {gid: b.gid, label: b.pick, ...cardMeta(b.gid, b.pick, null)}) : `<div class="gc official"><div class="top"><span>${esc(fmtTime(b.kickoff))}</span><span class="chip official">★ OFFICIAL PLAY</span></div><div class="tech" style="font-size:20px;color:#fff;margin:6px 0">${esc(b.pick)} <span class="muted">(${odds(b.price)})</span></div><div class="muted small">${esc(b.game)}</div>${trkSlot(ledgerMeta(b))}</div>`);
+  const cards = ob.map(b => G[b.gid] ? withTrack(gameCard(G[b.gid]).replace('<div class="top">', `<div class="top"><span class="chip official">★ OFFICIAL PLAY · ${esc(b.pick)}</span>`), {gid: b.gid, label: b.pick, ...cardMeta(b.gid, b.pick, null)}) : `<div class="gc official"><div class="top"><span>${esc(fmtTime(b.kickoff))}</span><span class="chip official">★ OFFICIAL PLAY</span></div><div class="tech" style="font-size:20px;color:#fff;margin:6px 0">${esc(b.pick)} <span class="muted">(${odds(b.price)})</span></div><div class="muted small">${esc(b.game)}</div>${trkSlot(ledgerMeta(b))}</div>`);
   if (!STALE) D.games.filter(g => g.status === "official" && !ob.some(b => b.gid === g.id) && g.id !== (D.top_play || {}).gid).forEach(g => cards.push(withTrack(gameCard(g), {gid: g.id, label: g.top.label, ...cardMeta(g.id, g.top.label, null)})));
   (heroProp ? ops.slice(1) : ops).forEach(x => cards.push(officialPropCard(x)));
-  h += cards.length ? `<h2 class="sec">MORE OFFICIAL PLAYS <small>${cards.length} more · sides, totals and player props · every one passed every required model check</small></h2><div class="grid auto">${cards.join("")}</div>`
+  h += cards.length ? `<h2 class="sec">MORE OFFICIAL PLAYS <small>${cards.length} more · sides, totals and player props · every one passed every required model check · live-tracked at kickoff</small></h2><div class="grid auto">${cards.join("")}</div>`
     : (tp || heroProp ? "" : `<div class="empty">No other official plays. The model tells us when to bet; it isn't asked to find bets.</div>`);
+  h += `<h2 class="sec sub" style="color:#ff9a3c">COLLEGE GAMEDAY <span style="color:var(--dim)">|</span> <span style="color:#fff;text-shadow:0 0 10px #8c1d2f">${esc(((D.featured || {}).team || "FEATURED").toUpperCase())} GAME</span></h2><div class="feat-row">${gdCard()}${featCard()}</div>`;
   h += `<div class="grid g2" style="margin-top:6px"><div><h2 class="sec">MARKET MOVERS <small>open → now</small></h2>${moversBoard()}</div>
         <div><h2 class="sec">MODEL vs MARKET <small>biggest disagreements</small></h2>${disagreeBoard()}</div></div>`;
   h += `<div class="grid g2"><div><h2 class="sec">CFB EDGE TOP 10 <small>model-generated</small></h2>${powerMini()}</div><div><h2 class="sec">LIVE FEED <small>what changed</small></h2>${feed(12)}</div></div>`;
@@ -584,7 +602,7 @@ function propsView() {
   if (leans.length) h += `<h3>LEANS (${leans.length}) · <span class="muted small">positive edge, healthy player, projection on the right side, but short of an official play (EV ≥ ${pct(r.lean_ev, 0)}, win chance ≥ ${pct(r.lean_prob, 0)}, confidence ≥ ${r.lean_conf}). Smaller stakes, not on the official record.</span></h3><div class="grid auto">${leans.map(x => propCard(x, true)).join("")}</div>`;
   if (P.near.length) h += `<h3>CLOSEST MISSES · positive EV but not recommended</h3><div class="tw"><table class="cards"><thead><tr><th>Prop</th><th>Line / proj</th><th>EV</th><th>Conf</th><th>Why not</th></tr></thead><tbody>${P.near.map(x =>
      `<tr ${x.gid ? `data-g="${x.gid}"` : ""} style="cursor:pointer"><td data-l="PROP"><b>${esc(propLabel(x))}</b><div class="tiny muted">${esc(x.team)} vs ${esc(x.opp)}</div></td><td data-l="LINE/PROJ" class="mono">${x.line} / ${num(x.proj)}</td>
-      <td data-l="EV" class="mono ${clsv(x.ev)}">${spct(x.ev)}</td><td data-l="CONF" class="mono" style="color:${confColor(x.conf)}">${x.conf}</td><td data-l="WHY NOT" class="small">${esc(x.fail.join("; "))}</td></tr>`).join("")}</tbody></table></div>`;
+      <td data-l="EV" class="mono ${clsv(x.ev)}">${spct(x.ev)}</td><td data-l="CONF" class="mono" style="color:${confColor(x.conf)}">${x.conf}</td><td data-l="WHY NOT" class="small">${esc(x.fail.join("; "))}<div style="margin-top:4px">${x.gid ? addBtnRaw(x.gid, propLabel(x), .25, true) : ""}</div></td></tr>`).join("")}</tbody></table></div>`;
   if (R && R.recent && R.recent.length) h += `<h3>RECENT GRADED PROPS</h3><div class="tw"><table class="cards"><thead><tr><th>Result</th><th>Prop</th><th>Actual</th><th>Units</th></tr></thead><tbody>${R.recent.map(x =>
      `<tr><td data-l="RESULT"><span class="chip ${x.status === "won" ? "good" : x.status === "lost" ? "bad" : ""}">${esc(x.status.toUpperCase())}</span></td><td data-l="PROP">${esc(x.player)} ${esc(x.side)} ${x.line} ${esc(String(x.market).replace("player_", "").replace(/_/g, " "))}</td><td data-l="ACTUAL" class="mono">${x.actual ?? "–"}</td><td data-l="UNITS" class="mono ${clsv(x.profit)}">${sgn(x.profit, 2)}</td></tr>`).join("")}</tbody></table></div>`;
   return h;
@@ -821,7 +839,7 @@ function openGame(id, tab = "OVERVIEW") { const g = G[id]; if (!g) return; const
   m.innerHTML = `<div class="sheet"><div class="hd"><button class="close" aria-label="Close">×</button>
    <div class="tiny mono muted">${esc(fmtTime(g.kickoff))}${g.tv ? " · " + esc(g.tv) : ""} · week ${g.week} ${g.neutral ? "· neutral site" : ""}</div>
    <div class="vs" style="margin-top:6px">${teamHead(g.away)}<div class="at">${g.neutral ? "VS" : "@"}</div>${teamHead(g.home)}</div>
-   <div style="text-align:center;margin-top:6px">${gdBadge(g)} ${statusChip(g.status)}</div>
+   <div style="text-align:center;margin-top:6px">${gdBadge(g)} ${statusChip(g.status)} ${gameAddBtn(g.id, `${g.away.school} @ ${g.home.school}`)}</div>
    <div class="mtabs">${GTABS.map(t => `<button class="mtab ${t === tab ? "on" : ""}" data-t="${t}">${t}</button>`).join("")}</div></div><div class="bd" id="gbody"></div></div>`;
   m.classList.remove("hidden"); document.body.style.overflow = "hidden";
   m.querySelector(".close").onclick = closeModal; m.onclick = e => { if (e.target === m) closeModal(); };
@@ -943,7 +961,7 @@ function addBtn(g, b, compact) { return addBtnRaw(g.id, b.label, b.status === "o
 function addBtnRaw(gid, label, units, compact) { const on = LS.get("card", []).some(c => c.gid === gid && c.label === label);
   return `<button class="btn ${compact ? "ghost" : "green"}" data-add="${gid}" data-label="${esc(label)}" data-units="${units}" style="${compact ? "padding:4px 8px;font-size:10px" : ""}">${on ? "✓ ON MY CARD" : "+ ADD TO MY CARD"}</button>`; }
 function addToCard(gid, label, units) { const c = LS.get("card", []); if (!c.some(x => x.gid === gid && x.label === label)) { const g = G[gid];
-  const pp = D.player_props ? [...D.player_props.qualifying, ...(D.player_props.leans || [])].find(x => x.gid === gid && propLabel(x) === label) : null;
+  const pp = D.player_props ? [...D.player_props.qualifying, ...(D.player_props.leans || []), ...(D.player_props.near || [])].find(x => x.gid === gid && propLabel(x) === label) : null;
   const b = (g && g.bets.find(x => x.label === label)) || (pp ? {price: pp.price, point: pp.line} : null);
   const gb = g && g.bets.find(x => x.label === label), src = pp || gb || D.open_bets.find(x => x.gid === gid && x.pick === label) || {};
   const e = {gid, label, units, price: b ? b.price : (src.price ?? null), point: b ? b.point : (src.point ?? null), added: new Date().toISOString(),
@@ -951,30 +969,38 @@ function addToCard(gid, label, units) { const c = LS.get("card", []); if (!c.som
     game: g ? `${g.away.school} @ ${g.home.school}` : (src.game || "")};
   if (pp) Object.assign(e, {type: "prop", player: pp.player, stat: pp.stat, side: pp.side, line: pp.line, team: pp.team, proj: pp.proj});
   else Object.assign(e, cardMeta(gid, label, b));
+  e.official = !!(pp ? D.player_props.qualifying.includes(pp) : (gb && gb.status === "official") || (src.pick && !src.now_note));
   c.push(e); LS.set("card", c); nav(); } }
 function card() {
   const c = LS.get("card", []), P = LS.get("parlays", []);
-  if (!c.length && !P.length) return `<h2 class="sec">MY CARD</h2><div class="empty">Your card is empty. Tap "+ ADD TO MY CARD" on any bet or prop. Your card lives only in this browser and is separate from the model's official record.</div>`;
-  let risk = 0;
-  const rows = c.map((x, i) => { const pp = x.type === "prop" && D.player_props ? [...D.player_props.qualifying, ...(D.player_props.leans || [])].find(y => y.gid === x.gid && propLabel(y) === x.label) : null;
-    const g = G[x.gid], b = (pp ? {price: pp.price, ev: pp.ev, status: "official"} : null) || g && g.bets.find(y => y.label === x.label);
+  if (!c.length && !P.length) return `<h2 class="sec">🎟 MY CARD</h2><div class="empty">Your card is empty. Tap <b>+ ADD TO CARD</b> on any bet, prop or live line, or <b>+ ADD GAME TO CARD</b> to just follow a game. Your card lives only in this browser and is separate from the model's official record.</div>`;
+  let risk = 0, nb = 0;
+  const games = c.map((x, i) => [x, i]).filter(([x]) => x.type === "game").map(([x, i]) => `<div class="gc" ${G[x.gid] ? `data-g="${x.gid}"` : ""}><div class="top"><span class="chip">👁 TRACKED GAME</span><span class="tiny muted">added ${x.added ? esc(new Date(x.added).toLocaleString([], {month: "short", day: "numeric", hour: "numeric", minute: "2-digit"})) : ""}</span></div>
+     <div style="font:800 18px Inter;margin:4px 0">${esc(x.label)}</div><div data-clive="${i}">${trackGameHTML(null, x)}</div>
+     <button class="btn ghost" data-rm="${i}" style="margin-top:8px;padding:4px 10px">REMOVE</button></div>`);
+  const rows = c.map((x, i) => [x, i]).filter(([x]) => x.type !== "game").map(([x, i]) => { nb++;
+    const pp = x.type === "prop" && D.player_props ? [...D.player_props.qualifying, ...(D.player_props.leans || []), ...(D.player_props.near || [])].find(y => y.gid === x.gid && propLabel(y) === x.label) : null;
+    const g = G[x.gid], b = (pp ? {price: pp.price, ev: pp.ev, status: D.player_props.qualifying.includes(pp) ? "official" : "lean"} : null) || g && g.bets.find(y => y.label === x.label);
     risk += +x.units; const started = !g || new Date(g.kickoff) < Date.now();
     const pre = started ? "" : !b ? '<span class="chip bad">LINE GONE</span>' :
-      (b.ev != null && b.ev >= D.meta.min_ev && (b.status === "official" || b.status === "strong")) ? '<span class="chip good">STILL PLAYABLE</span>' : b.ev > 0 ? '<span class="chip warn">EDGE SHRINKING</span>' : '<span class="chip bad">NO LONGER PLAYABLE</span>';
-    return `<div class="gc" ${g ? `data-g="${g.id}"` : ""}><div class="top"><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" class="sel" data-sel="${i}" ${SEL.has(i) ? "checked" : ""} title="select for a parlay">${g ? esc(fmtTime(g.kickoff)) : ""}</span><span data-cst="${i}">${pre}</span></div>
+      (b.ev != null && b.ev >= D.meta.min_ev && (b.status === "official" || b.status === "strong")) ? '<span class="chip good">STILL +EV</span>' : b.ev > 0 ? '<span class="chip warn">SMALL EDGE</span>' : '<span class="chip">NO MODEL EDGE</span>';
+    return `<div class="gc" ${g ? `data-g="${g.id}"` : ""}><div class="top"><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" class="sel" data-sel="${i}" ${SEL.has(i) ? "checked" : ""} title="select for a parlay">${verdictHTML(x)}</span><span data-cst="${i}">${pre}</span></div>
      <div style="font:800 18px Inter;margin:4px 0">${esc(x.label)}</div>
-     <div class="muted small">${g ? esc(g.away.school + " @ " + g.home.school) : esc(x.game || "")} · added at ${odds(x.price)}${x.live ? ` <span class="chip">LIVE BET · ${esc(x.when || "")}</span>` : ""}</div>
-     <div class="tiny mono muted" style="margin-top:4px">ENTRY: ${esc(x.label)} at ${odds(x.price)} · ${x.added ? esc(new Date(x.added).toLocaleString([], {month: "short", day: "numeric", hour: "numeric", minute: "2-digit"})) : ""}${x.ev != null ? ` · model EV ${spct(x.ev)}` : ""}${x.edge != null ? ` · edge ${sgn(x.edge)}` : ""}${x.conf != null ? ` · confidence ${x.conf}` : ""}</div>
+     <div class="muted small">${g ? esc(g.away.school + " @ " + g.home.school) + " · " + esc(fmtTime(g.kickoff)) : esc(x.game || "")}${x.live ? ` <span class="chip">LIVE BET</span>` : ""}</div>
+     <div class="tiny mono muted" style="margin-top:4px">LOCKED AT ENTRY: ${esc(x.label)} at ${odds(x.price)} · ${x.added ? esc(new Date(x.added).toLocaleString([], {month: "short", day: "numeric", hour: "numeric", minute: "2-digit"})) : ""}${x.live ? ` · score ${esc(x.when || x.score || "")}` : ""}${x.model ? ` · model ${esc(x.model)}` : x.proj != null ? ` · model proj ${num(x.proj)}` : ""}${x.ev != null ? ` · EV ${spct(x.ev)}` : ""}${x.edge != null ? ` · edge ${sgn(x.edge)}` : ""}${x.conf != null ? ` · confidence ${x.conf}` : ""}</div>
+     ${verdictNote(x)}
      <div data-clive="${i}" class="small" style="margin-top:6px"></div>
      <div class="lines"><div><div class="k">UNITS</div><div class="v"><input type="number" step=".25" min="0" value="${x.units}" data-u="${i}" style="width:64px;background:#000;color:#fff;border:1px solid var(--edge2);border-radius:6px;text-align:center"></div></div>
-      <div><div class="k">STAKE</div><div class="v y">$${(x.units * D.meta.unit).toFixed(2)}</div></div><div><div class="k">MODEL EV</div><div class="v ${b ? clsv(b.ev) : ""}">${b ? spct(b.ev) : "–"}</div></div></div>
-     <button class="btn ghost" data-rm="${i}" style="margin-top:8px;padding:4px 10px">REMOVE</button></div>`; }).join("");
-  return `<h2 class="sec">MY CARD <small>personal · stored in this browser only · live scores & statuses refresh every 30 seconds</small></h2>
-   <div class="stats" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><div class="v">${c.length}</div><div class="k">Bets</div></div><div class="stat"><div class="v">${risk.toFixed(2)}u</div><div class="k">Total risk</div></div>
+      <div><div class="k">STAKE</div><div class="v y">$${(x.units * D.meta.unit).toFixed(2)}</div></div><div><div class="k">MODEL EV NOW</div><div class="v ${b ? clsv(b.ev) : ""}">${b ? spct(b.ev) : "–"}</div></div></div>
+     <button class="btn ghost" data-rm="${i}" style="margin-top:8px;padding:4px 10px">REMOVE</button></div>`; });
+  return `<h2 class="sec">🎟 MY CARD <small>your personal tracker · stored in this browser · live updates every 30 seconds · being on your card does NOT mean the model recommends it</small></h2>
+   <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="stat"><div class="v">${nb}</div><div class="k">Bets</div></div><div class="stat"><div class="v">${games.length}</div><div class="k">Tracked games</div></div><div class="stat"><div class="v">${risk.toFixed(2)}u</div><div class="k">Total risk</div></div>
    <div class="stat"><div class="v">$${(risk * D.meta.unit).toFixed(0)}</div><div class="k">At $${D.meta.unit}/unit</div></div></div>
-   <div class="filters"><button class="btn gold" id="mkparlay" ${SEL.size < 2 ? "disabled style=\"opacity:.45\"" : ""}>CREATE PARLAY (${SEL.size} selected)</button><span class="muted small">Tick 2+ bets from different games to build a parlay.</span></div>
-   <div id="pbuilder"></div><div class="grid auto">${rows}</div>
-   ${P.length ? `<h2 class="sec">MY PARLAYS</h2><div class="grid auto">${P.map((pl, k) => parlayCard(pl, k)).join("")}</div>` : ""}`;
+   <div class="panel small"><span class="chip official">★ OFFICIAL PLAY</span> passed every model check · <span class="chip userpick">USER PICK</span> something you chose; it's tracked the same way but isn't a model recommendation · <span class="chip">👁 TRACKED GAME</span> followed without a bet</div>
+   ${rows.length ? `<div class="filters"><button class="btn gold" id="mkparlay" ${SEL.size < 2 ? "disabled style=\"opacity:.45\"" : ""}>CREATE PARLAY (${SEL.size} selected)</button><span class="muted small">Tick 2+ bets from different games to build a parlay.</span></div>
+   <div id="pbuilder"></div><h2 class="sec sub">MY BETS</h2><div class="grid auto">${rows.join("")}</div>` : ""}
+   ${games.length ? `<h2 class="sec sub">TRACKED GAMES</h2><div class="grid auto">${games.join("")}</div>` : ""}
+   ${P.length ? `<h2 class="sec sub">MY PARLAYS</h2><div class="grid auto">${P.map((pl, k) => parlayCard(pl, k)).join("")}</div>` : ""}`;
 }
 const SEL = new Set();
 const dec = a => a > 0 ? 1 + a / 100 : 1 + 100 / Math.abs(a);
@@ -1298,6 +1324,7 @@ function liveEntry(c, gs) {
   const isH = c.label.startsWith(tName(gs.home)), o = gs.odds;
   const e = {gid: gs.id, label: c.label, units: 1, price: c.price, live: true, game: `${tName(gs.away)} @ ${tName(gs.home)}`,
     stake: D.meta.unit, ev: +c.ev.toFixed(4), conf: c.conf, edge: c.mk === "Moneyline" ? null : +c.gap.toFixed(1), model: c.modelLine,
+    official: !!c.ok, offWhy: c.ok ? "" : (c.why[0] || ""), score: `${gs.away.score}-${gs.home.score}`, clock: clockTxt(gs),
     when: `${gs.away.abbr} ${gs.away.score}-${gs.home.score} ${gs.home.abbr}, ${clockTxt(gs)}`};
   if (c.mk === "Total") Object.assign(e, {type: "total", side: c.label.startsWith("Over") ? "over" : "under", line: o.ov.live.line});
   else Object.assign(e, {type: c.mk === "Spread" ? "spread" : "ml", teamId: isH ? gs.home.id : gs.away.id, line: c.mk === "Spread" ? (isH ? o.spH.live.line : o.spA.live.line) : null});
@@ -1355,7 +1382,7 @@ function liveCard(gs) {
     ${scoreRows(gs)}
     ${gs.state === "in" && gs.down ? `<div class="lv-sit">${esc(gs.down)}</div>` : ""}
     <div class="lv-lines"><span>SPREAD<b>${esc(favLine(ls, gs))}</b></span><span>TOTAL<b>${lt ?? "–"}</b></span></div>
-    ${gs.state === "in" ? `<div class="lv-add">${k.all.filter(c => c.price != null).map(c => liveAddBtn(c, gs, true, shortLbl(c, gs))).join("") || '<span class="tiny muted">Live lines suspended right now</span>'}</div>` : ""}
+    <div class="lv-add">${gameAddBtn(gs.id, `${tName(gs.away)} @ ${tName(gs.home)}`)}${gs.state === "in" ? k.all.filter(c => c.price != null).map(c => liveAddBtn(c, gs, true, shortLbl(c, gs))).join("") || '<span class="tiny muted">Live lines suspended right now</span>' : ""}</div>
     <div class="lv-more">${open ? "▲ HIDE ANALYSIS" : "▼ TAP FOR MODEL ANALYSIS"}</div>
     <div class="lv-detail">${open ? liveDetail(gs, k) : ""}</div></div>`;
 }
@@ -1399,7 +1426,7 @@ async function renderLive() {
   $("#liveGames").innerHTML = sums.map(liveCard).join("") || '<div class="empty">No FBS games in progress right now.</div>';
   const pre = b => ({...b, state: "pre"});
   $("#liveSoon").innerHTML = soon.slice(0, 12).map(b => `<div class="lv" ${G[b.id] ? `data-g="${b.id}"` : ""}><div class="lv-top"><span class="lv-clock" style="color:var(--blue)">${esc(fmtTime(b.start))}</span>${G[b.id] ? statusChip(G[b.id].status) : ""}</div>${scoreRows(pre(b))}
-     <div class="lv-lines"><span>${esc(b.tv || "")}</span>${G[b.id] ? `<span>SPREAD<b>${esc(abbr(G[b.id].home))} ${line(G[b.id].market.spread)}</b></span><span>TOTAL<b>${num(G[b.id].market.total)}</b></span>` : ""}</div></div>`).join("") || '<div class="empty small">Nothing in the next 6 hours.</div>';
+     <div class="lv-add">${gameAddBtn(b.id, `${tName(b.away)} @ ${tName(b.home)}`)}${G[b.id] && G[b.id].top ? addBtnRaw(b.id, G[b.id].top.label, .5, true) : ""}</div><div class="lv-lines"><span>${esc(b.tv || "")}</span>${G[b.id] ? `<span>SPREAD<b>${esc(abbr(G[b.id].home))} ${line(G[b.id].market.spread)}</b></span><span>TOTAL<b>${num(G[b.id].market.total)}</b></span>` : ""}</div></div>`).join("") || '<div class="empty small">Nothing in the next 6 hours.</div>';
   $("#liveFinal").innerHTML = fin.map(b => `<div class="lv" style="cursor:default"><div class="lv-top"><span class="lv-clock" style="color:var(--dim)">FINAL</span></div>${scoreRows(b)}</div>`).join("") || '<div class="empty small">No finals yet.</div>';
   const stamp = $("#liveStamp"); if (stamp) stamp.textContent = "updated " + new Date().toLocaleTimeString([], {hour: "numeric", minute: "2-digit", second: "2-digit"});
   $("#liveGames").onclick = e => { const ab = e.target.closest("[data-ladd]");
@@ -1450,13 +1477,15 @@ function legacyMeta(e) { if (e.type) return e; return Object.assign({}, e, cardM
 async function refreshCard() {
   if (route().v !== "card") return;
   const c = LS.get("card", []).map(legacyMeta), P = LS.get("parlays", []);
-  const ids = [...new Set([...c.map(e => e.gid), ...P.flatMap(p => p.legs.map(l => l.gid))])];
+  const ids = [...new Set([...c.map(e => String(e.gid)), ...P.flatMap(p => p.legs.map(l => String(l.gid)))])];
   await liveBoard();
   const gsMap = {};
   await Promise.all(ids.map(async id => { const b = (LV.board || []).find(x => x.id === id);
     if (b && b.state === "pre") { gsMap[id] = {state: "pre", start: b.start}; return; }
     gsMap[id] = await liveSummary(id); }));
-  c.forEach((e, i) => { const gs = gsMap[e.gid], s = betStatus(e, gs);
+  c.forEach((e, i) => { const gs = gsMap[e.gid];
+    if (e.type === "game") { const el = document.querySelector(`[data-clive="${i}"]`); if (el && gs && gs.home) el.innerHTML = trackGameHTML(gs, e); return; }
+    const s = betStatus(e, gs);
     const el = document.querySelector(`[data-clive="${i}"]`), st = document.querySelector(`[data-cst="${i}"]`);
     if (gs && gs.state !== "pre" && gs.home && el) el.innerHTML = trackHTML(e, gs);
     if (st && gs && gs.state !== "pre" && gs.home) st.innerHTML = stChip(e.type === "prop" ? propLive(e, gs).st : s); });
@@ -1511,6 +1540,65 @@ async function liveTick() {
   try { if (v === "live") await renderLive(); if (v === "card") await refreshCard(); await fillSlots(); await fillTracks(); } catch (e) {}
 }
 setInterval(liveTick, 30000);
+
+/* ---------- OFFICIAL PLAY vs USER PICK (being on My Card never means the model recommends it) ---------- */
+function modelVerdict(x) {
+  if (x.type === "game") return null;
+  if (x.live) return {official: !!x.official, ev: x.ev, thr: 0.08, why: x.offWhy || ""};
+  if (x.type === "prop") {
+    const P = D.player_props || {}, all = [...(P.qualifying || []), ...(P.leans || []), ...(P.near || [])];
+    const pp = all.find(y => y.gid === x.gid && propLabel(y) === x.label);
+    const off = (P.qualifying || []).some(y => y.gid === x.gid && propLabel(y) === x.label);
+    return {official: off || !!x.official, ev: pp ? pp.ev : x.ev, thr: (P.rules || {}).min_ev ?? 0.05, why: pp && pp.fail.length ? pp.fail[0] : (pp ? "" : "not in today's model pricing")};
+  }
+  const g = G[x.gid], b = g && g.bets.find(y => y.label === x.label);
+  const led = D.open_bets.find(y => y.gid === x.gid && y.pick === x.label && y.type === "single");
+  const off = (b && b.status === "official") || (led && !led.now_note) || !!x.official;
+  const PRI = ["Bet type enabled", "Injuries", "Model stability & risk flags", "Model vs market sanity", "Expected value", "Edge vs line", "Win probability"];
+  const failed = (b && b.checks ? b.checks.filter(c => c.required && !c.ok) : []).sort((p, q) => ((PRI.indexOf(p.name) + 1) || 99) - ((PRI.indexOf(q.name) + 1) || 99));
+  return {official: off, ev: b ? b.ev : x.ev, thr: D.meta.min_ev, why: failed.length ? `${failed[0].name}: ${failed[0].value}` : (b && b.why_not && b.why_not[0]) || (led && led.now_note) || ""};
+}
+function verdictHTML(x) {
+  const v = modelVerdict(x); if (!v) return '<span class="chip">TRACKED GAME</span>';
+  if (v.official) return '<span class="chip official">★ OFFICIAL PLAY</span>';
+  return `<span class="chip userpick">USER PICK</span>`;
+}
+function verdictNote(x) {
+  const v = modelVerdict(x); if (!v || v.official) return "";
+  return `<div class="offnote">Model EV <b>${v.ev == null ? "–" : spct(v.ev)}</b> · Official threshold ${spct(v.thr)} · <b>Does not meet Official Play criteria</b>${v.why ? ` (${esc(v.why)})` : ""}</div>`;
+}
+const gameAddBtn = (gid, label) => { const on = LS.get("card", []).some(c => c.type === "game" && c.gid === String(gid));
+  return `<button class="btn ghost addgame" data-addgame="${esc(String(gid))}" data-glabel="${esc(label)}">${on ? "✓ GAME ON CARD" : "+ ADD GAME TO CARD"}</button>`; };
+function addGameToCard(gid, label) { const c = LS.get("card", []); if (c.some(x => x.type === "game" && x.gid === gid)) return;
+  c.push({type: "game", gid, label, game: label, units: 0, added: new Date().toISOString()}); LS.set("card", c); nav(); }
+// one delegated handler for every add button on the site (cards, modals, live cards, live trackers)
+document.addEventListener("click", e => {
+  const ag = e.target.closest("[data-addgame]"), al = e.target.closest("[data-ladd]"), ab = e.target.closest("[data-add]");
+  if (!ag && !al && !ab) return;
+  e.stopPropagation(); e.preventDefault();
+  if (ag) { addGameToCard(ag.dataset.addgame, ag.dataset.glabel); ag.textContent = "✓ GAME ON CARD"; return; }
+  if (al) { const en = LIVE_CANDS[al.dataset.ladd], cd = LS.get("card", []);
+    if (en && !cd.some(x => x.gid === en.gid && x.label === en.label)) { cd.push({...en, added: new Date().toISOString()}); LS.set("card", cd); nav(); }
+    al.textContent = "✓ " + al.textContent.replace(/^[+✓]\s*/, "").replace(/^ADD TO MY CARD$/, "ON CARD"); return; }
+  addToCard(ab.dataset.add, ab.dataset.label, +ab.dataset.units || 1); ab.textContent = "✓ ON MY CARD";
+}, true);
+function trackGameHTML(gs, x) {
+  const g = G[x.gid];
+  if (!gs || gs.state === "pre" || !gs.home) {
+    return g ? `<div class="mono small">Kickoff ${esc(fmtTime(g.kickoff))}${g.tv ? " · " + esc(g.tv) : ""}</div>
+      <div class="trk-grid"><div><div class="k">SPREAD</div><div class="v">${esc(abbr(g.home))} ${line(g.market.spread)}</div></div><div><div class="k">TOTAL</div><div class="v">${num(g.market.total)}</div></div>
+      <div><div class="k">CFB EDGE FAIR</div><div class="v b">${esc(abbr(g.home))} ${fl(g.model.fair_spread)} · ${num(g.model.fair_total)}</div></div><div><div class="k">${esc(abbr(g.home))} WIN (MODEL)</div><div class="v g">${pct(g.model.win_home, 0)}</div></div></div>
+      <div class="small" style="margin-top:6px">${statusChip(g.status)} ${g.top ? esc(g.top.label) + " · EV " + spct(g.top.ev) : ""}</div>` : '<div class="muted small">Not started yet.</div>';
+  }
+  const k = liveCalc(gs), o = gs.odds, lm = k.lm, kv = (a, b, c = "") => `<div><div class="k">${a}</div><div class="v ${c}">${b}</div></div>`;
+  const cs = o && o.spH.close ? o.spH.close.line : null, ls = o && o.spH.live ? o.spH.live.line : null, ct = o && o.ov.close ? o.ov.close.line : null, lt = o && o.ov.live ? o.ov.live.line : null;
+  return `<div class="trk-box ${gs.state === "post" ? "post" : ""}"><div class="lv-top"><span class="lv-clock">${gs.state === "in" ? '<span class="livetag"><span class="dot"></span></span> ' : ""}${esc(clockTxt(gs))}</span>${gs.state === "in" ? indHTML(k.level) : ""}</div>
+    ${scoreRows(gs)}${gs.state === "in" && gs.down ? `<div class="lv-sit">${esc(gs.down)}</div>` : ""}
+    <div class="trk-grid">${kv("SPREAD PRE → LIVE", `${esc(favLine(cs, gs))} → ${esc(favLine(ls, gs))}`)}${kv("TOTAL PRE → LIVE", `${ct ?? "–"} → ${lt ?? "–"}`)}
+     ${lm ? kv(`${esc(gs.home.abbr)} WIN (MODEL)`, pct(lm.wp, 0), "g") + kv("MODEL PROJ. FINAL", `${esc(gs.away.abbr)} ${num(lm.projA, 0)}-${num(lm.projH, 0)} ${esc(gs.home.abbr)}`, "b") : ""}</div>
+    ${k.ok.length ? k.ok.map(c => `<div class="chip official" style="margin-top:8px">⚡ NEW LIVE EDGE: ${esc(c.label)} ${odds(c.price)} · EV ${spct(c.ev)}</div> ${liveAddBtn(c, gs, true, shortLbl(c, gs))}`).join("") : (gs.state === "in" ? '<div class="tiny muted" style="margin-top:6px">No qualifying live edge right now.</div>' : "")}
+    ${gs.state === "in" ? `<div class="lv-add">${k.all.filter(c => c.price != null).map(c => liveAddBtn(c, gs, true, shortLbl(c, gs))).join("")}</div>` : ""}</div>`;
+}
 
 /* ---------- OFFICIAL PLAY qualification checklist ---------- */
 function qualHTML(checks, open) {
@@ -1585,13 +1673,14 @@ function trackHTML(e, gs, big) {
       grid = kv("CURRENT MARGIN", `${me.abbr} ${margin > 0 ? "+" : ""}${margin}`) + kv("REQUIRED", e.line < 0 ? `win by ${Math.floor(-e.line) + 1}+` : `lose by ${Math.ceil(e.line) - 1} or less`) +
         kv(cover > 0 ? "COVERING BY" : "NEEDS", cover > 0 ? `${cover} pts` : `${more} more pt${more === 1 ? "" : "s"} of margin`, cover > 0 ? "g" : "y") +
         (pc != null ? kv("MODEL COVER CHANCE NOW", pct(pc, 0), "g") + kv("MODEL PROJ. MARGIN", `${me.abbr} ${tMu > 0 ? "+" : ""}${num(tMu)}`, "b") : "") +
-        (liveL && liveL.line != null && !fin ? kv("LIVE MARKET", `${me.abbr} ${line(liveL.line)}`) : "");
+        (liveL && liveL.line != null && !fin ? kv("LIVE MARKET", `${me.abbr} ${line(liveL.line)}`) : "") +
+        (lm && !fin ? kv("UPDATED MODEL FINAL", `${gs.away.abbr} ${num(lm.projA, 0)}-${num(lm.projH, 0)} ${gs.home.abbr}`, "b") : "");
     }
   }
   return `<div class="trk-box ${fin ? "post" : ""}"><div class="lv-top"><span class="lv-clock">${gs.state === "in" ? '<span class="livetag"><span class="dot"></span></span> ' : ""}${big ? "★ OFFICIAL PLAY · " : ""}${esc(clockTxt(gs))}</span>${stChip(st)}</div>
     ${big ? scoreRows(gs) : `<div class="mono small"><b>${esc(gs.away.abbr)} ${gs.away.score} - ${gs.home.score} ${esc(gs.home.abbr)}</b></div>`}
     <div class="trk-big">${main}</div><div class="trk-grid">${grid}</div>
-    ${big ? '<div style="margin-top:10px"><button class="btn ghost" data-showpre style="padding:3px 10px">SHOW / HIDE PREGAME ANALYSIS</button></div>' : ""}
+    ${big ? `<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">${addBtnRaw(e.gid, e.label, 1, true)}<button class="btn ghost" data-showpre style="padding:3px 10px">SHOW / HIDE PREGAME ANALYSIS</button></div>` : ""}
     <div class="tiny muted" style="margin-top:6px">Live projections are probabilities, not guarantees - a bet is only WON or LOST once it's mathematically decided.</div></div>`;
 }
 const PROP_NAMES_JS = {pass_yds: "passing yards", rush_yds: "rushing yards", rec_yds: "receiving yards", receptions: "receptions"};
