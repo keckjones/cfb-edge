@@ -57,6 +57,8 @@ a{color:var(--blue);text-decoration:none}button{font:inherit;color:inherit}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;padding:7px 14px;border-radius:999px;border:1px solid var(--edge2);background:var(--panel);font:700 12px var(--tech);letter-spacing:.08em;cursor:pointer;color:var(--ink);white-space:nowrap}
 .tab:hover{border-color:var(--blue);box-shadow:var(--b-glow)}.tab.on{background:var(--pink);border-color:var(--pink);box-shadow:0 0 14px rgba(255,46,136,.6);color:#fff}
+.tab.gold{border-color:var(--gold);color:var(--gold);text-shadow:0 0 8px rgba(255,210,63,.5)}.tab.gold.on{background:var(--gold);border-color:var(--gold);color:#000;box-shadow:var(--y-glow);text-shadow:none}
+.bnav button.gold{color:var(--gold)}.bnav button.gold.on{color:#fff;text-shadow:var(--y-glow)}
 .tab.gd{border-color:var(--green);color:var(--green)}.tab.gd.on{background:var(--green);color:#000;box-shadow:var(--g-glow)}
 .badge-n{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--gold);color:#000;font-size:11px;text-align:center}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(6,1fr);background:rgba(0,0,0,.94);border-top:2px solid var(--pink);
@@ -400,16 +402,16 @@ function header() {
 }
 
 /* ---------- navigation ---------- */
-const VIEWS = [["home", "HOME", "⌂"], ["picks", "PICKS", "★"], ["props", "PLAYER PROPS", "◎"], ["games", "GAMES", "▦"], ["rankings", "RANKINGS", "#"], ["tool", "WHO WOULD WIN?", "⚔"],
+const VIEWS = [["home", "HOME", "⌂"], ["picks", "OFFICIAL PICKS", "★"], ["props", "PLAYER PROPS", "◎"], ["games", "GAMES", "▦"], ["rankings", "RANKINGS", "#"], ["tool", "WHO WOULD WIN?", "⚔"],
   ["model", "MODEL", "◉"], ["card", "MY CARD", "▤"]];
 function nav() {
   const r = route().v, card = LS.get("card", []);
   $("#tabs").innerHTML = `<button class="tab gd ${r === "live" ? "on" : ""}" data-v="live">● GAMEDAY LIVE</button>` +
-    VIEWS.filter(([k]) => k !== "card").map(([k, n]) => `<button class="tab ${r === k ? "on" : ""}" data-v="${k}">${n}</button>`).join("");
+    VIEWS.filter(([k]) => k !== "card").map(([k, n]) => `<button class="tab ${k === "picks" || k === "props" ? "gold" : ""} ${r === k ? "on" : ""}" data-v="${k}">${k === "picks" ? "★ " : ""}${n}</button>`).join("");
   const n = card.length + LS.get("parlays", []).length;
   $("#mcCount").textContent = n ? n : ""; $("#mcCount").style.display = n ? "" : "none";
-  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["live", "LIVE", "●"], ["card", "MY CARD", "🎟"], ["picks", "PICKS", "★"], ["props", "PROPS", "◎"], ["model", "MODEL", "◉"]]
-    .map(([k, nm, i]) => `<button class="${r === k ? "on" : ""} ${k === "card" ? "mc" : ""}" data-v="${k}"><i>${i}</i>${nm}${k === "card" && n ? `<span class="bn">${n}</span>` : ""}</button>`).join("");
+  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["live", "LIVE", "●"], ["card", "MY CARD", "🎟"], ["picks", "OFFICIAL", "★"], ["props", "PROPS", "◎"], ["model", "MODEL", "◉"]]
+    .map(([k, nm, i]) => `<button class="${r === k ? "on" : ""} ${k === "card" ? "mc" : ""} ${k === "picks" || k === "props" ? "gold" : ""}" data-v="${k}"><i>${i}</i>${nm}${k === "card" && n ? `<span class="bn">${n}</span>` : ""}</button>`).join("");
   document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { location.hash = b.dataset.v; });
 }
 function route() { const h = decodeURIComponent(location.hash.slice(1) || "home"); const [v, ...rest] = h.split("/"); return {v, arg: rest.join("/")}; }
@@ -582,7 +584,7 @@ function gameday() {
 const propLabel = x => `${x.player} ${x.side === "over" ? "Over" : "Under"} ${x.line} ${x.prop.toLowerCase()}`;
 function propsView() {
   const P = D.player_props, R = P ? P.record : null;
-  let h = `<h2 class="sec">PLAYER PROPS <small>model projections vs. sportsbook lines · a prop is recommended only when every rule passes</small></h2>`;
+  let h = `<h2 class="sec" style="color:var(--gold);text-shadow:var(--y-glow)">◎ PLAYER PROPS <small>model projections vs. sportsbook lines · a prop is recommended only when every rule passes</small></h2>`;
   if (!P) return h + '<div class="empty">Player props appear after the next model run.</div>';
   const r = P.rules;
   h += `<div class="panel small"><b class="y">QUALIFYING RULES</b> &nbsp;<span class="chip">EV ≥ ${pct(r.min_ev, 0)}</span><span class="chip">win chance ≥ ${pct(r.min_prob, 0)}</span>
@@ -634,10 +636,9 @@ const officialProps = () => STALE || !D.player_props || !D.player_props.refreshe
 const propsBlock = (title) => { const op = officialProps(); return op.length ? `<h2 class="sec">${title} <small>${op.length} · every one passed all prop rules</small></h2><div class="grid auto">${op.map(x => propCard(x)).join("")}</div>` : ""; };
 function picks() {
   if (STALE) return `<h2 class="sec">PICKS</h2>`;
-  let h = `<h2 class="sec">OFFICIAL PLAYS <small>$${D.meta.unit} per unit · playable-to price = worst line where model EV still ≥ ${pct(D.meta.min_ev, 0)}</small></h2>`;
+  let h = `<h2 class="sec" style="color:var(--gold);text-shadow:var(--y-glow)">★ OFFICIAL PICKS <small>game bets only (player props have their own tab) · $${D.meta.unit} per unit · playable-to price = worst line where model EV still ≥ ${pct(D.meta.min_ev, 0)}</small></h2>`;
   const open = D.open_bets.filter(b => b.type === "single");
-  const ops2 = officialProps();
-  h += open.length || ops2.length ? `<div class="grid auto">${ops2.map(x => officialPropCard(x)).join("")}${open.map(b => {
+  h += open.length ? `<div class="grid auto">${open.map(b => {
     const g = G[b.gid]; const cur = g ? curPoint(g, b) : null;
     const playable = b.playable == null || cur == null ? null : (b.market === "Total" ? (b.pick.startsWith("Over") ? cur <= b.playable : cur >= b.playable) : cur >= b.playable);
     const started = new Date(b.kickoff) < Date.now();
@@ -656,7 +657,7 @@ function picks() {
   h += near.length ? `<div class="grid auto">${near.map(g => `<div class="panel" data-g="${g.id}" style="cursor:pointer"><div class="small muted">${esc(g.away.school)} @ ${esc(g.home.school)} · ${esc(fmtTime(g.kickoff))}</div>
      <b class="w">${esc(g.top.label)}</b> <span class="muted">${odds(g.top.price)} · paper EV ${spct(g.top.ev)}</span><ul class="small" style="margin:6px 0 0 18px;padding:0">${g.top.why_not.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>`).join("")}</div>` :
     '<div class="empty small">Nothing vetoed right now.</div>';
-  h += `<div class="empty small" style="margin-top:14px">Player props have their own tab: <a href="#props">PLAYER PROPS</a>.</div>`;
+  h += `<div class="empty small" style="margin-top:14px">Official player props are on the <a href="#props">PLAYER PROPS</a> tab.</div>`;
   return h;
 }
 function curPoint(g, b) { if (b.market === "Total") return g.market.total; if (g.market.spread == null) return null;
