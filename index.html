@@ -574,8 +574,10 @@ function simulate(sim, ctx, N = 10000) {
   let win = 0, cover = 0, over = 0, push = 0, upset = 0, hs = [], as = [];
   const fav = ctx.spread != null ? (ctx.spread < 0 ? "home" : "away") : null;
   for (let k = 0; k < N; k++) {
-    const m = sm(); let t = st(); if (t < Math.abs(m)) t = Math.abs(m);
-    if ((t + m) % 2 !== 0) t += 1; const h = (t + m) / 2, a = (t - m) / 2; hs.push(h); as.push(a);
+    // draw the total conditional on the margin: redraw until both teams have a valid (non-negative) score
+    const m = sm(); let t = st(), tries = 0;
+    while ((t < Math.abs(m) + 3 || (t + m) % 2 !== 0) && tries++ < 200) t = st();
+    if (t < Math.abs(m)) t = Math.abs(m); if ((t + m) % 2 !== 0) t += 1; const h = (t + m) / 2, a = (t - m) / 2; hs.push(h); as.push(a);
     hist[m] = (hist[m] || 0) + 1; const key = `${h}-${a}`; scores[key] = (scores[key] || 0) + 1;
     if (m > 0) win++; if (ctx.spread != null) { const v = m + ctx.spread; if (v > 0) cover++; else if (v === 0) push++; }
     if (ctx.total != null && t > ctx.total) over++; if (fav === "home" && m < 0) upset++; if (fav === "away" && m > 0) upset++;
