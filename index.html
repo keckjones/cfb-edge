@@ -270,7 +270,7 @@ function header() {
     <div class="row">Games analyzed <b>${m.games_analyzed.toLocaleString()}</b></div>
     <div class="row">Version <b>${esc(m.version)}</b></div>`;
   const rec = perf.all ? `${perf.all.w}-${perf.all.l}${perf.all.p ? "-" + perf.all.p : ""}` : "0-0";
-  const s = [["b", m.games_priced, "Games priced"], ["", m.official, "Official model plays"],
+  const s = [["b", m.games_priced, "Games priced"], ["", D.open_bets.filter(b => b.type === "single" && !b.now_note && new Date(b.kickoff) > Date.now()).length, "Open official plays"],
     [h.spread.roi > 0 ? "g" : "r", spct(h.spread.roi), "Spread backtest ROI"], ["b", m.games_analyzed.toLocaleString(), "Games analyzed"],
     [perf.all && perf.all.units < 0 ? "r" : "g", rec, "Live record"],
     [perf.all && perf.all.clv != null ? (perf.all.clv >= 0 ? "g" : "r") : "", perf.all && perf.all.clv != null ? sgn(perf.all.clv) : "–", "Avg CLV (pts)"]];
