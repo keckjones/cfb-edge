@@ -576,7 +576,7 @@ function simulate(sim, ctx, N = 10000) {
   for (let k = 0; k < N; k++) {
     // draw the total conditional on the margin: redraw until both teams have a valid (non-negative) score
     const m = sm(); let t = st(), tries = 0;
-    while ((t < Math.abs(m) + 3 || (t + m) % 2 !== 0) && tries++ < 200) t = st();
+    while ((t < Math.abs(m) || (t + m) % 2 !== 0) && tries++ < 200) t = st();
     if (t < Math.abs(m)) t = Math.abs(m); if ((t + m) % 2 !== 0) t += 1; const h = (t + m) / 2, a = (t - m) / 2; hs.push(h); as.push(a);
     hist[m] = (hist[m] || 0) + 1; const key = `${h}-${a}`; scores[key] = (scores[key] || 0) + 1;
     if (m > 0) win++; if (ctx.spread != null) { const v = m + ctx.spread; if (v > 0) cover++; else if (v === 0) push++; }
@@ -599,7 +599,7 @@ function simulate(sim, ctx, N = 10000) {
      ...(ctx.total != null ? [["OVER " + ctx.total, pct(over / N)], ["UNDER " + ctx.total, pct(1 - over / N)]] : []),
      ["AVG SCORE", `${avg(hs).toFixed(1)}-${avg(as).toFixed(1)}`], ["MEDIAN SCORE", `${med(hs)}-${med(as)}`], ...(fav ? [["UPSET", pct(upset / N)]] : [])]
      .map(([k, v]) => `<div><div class="k">${esc(k)}</div><div class="v w">${esc(v)}</div></div>`).join("")}</div>
-   <div style="margin-top:10px">${svg}</div><div class="tiny muted">Margin distribution (home perspective). Brighter bars = key numbers (3, 7, 10, 14, 17, 21), weighted from real college results.</div>
+   <div style="margin-top:10px">${svg}</div><div class="tiny muted">Margin distribution (home perspective). Brighter bars = key numbers (3, 7, 10, 14, 17, 21), weighted from real college results. Totals are drawn conditional on each simulated margin (a blowout needs points), so simulated O/U can differ slightly from the stand-alone total.</div>
    <div class="small" style="margin-top:6px">Most common final scores: ${top.map(([k, c]) => `<span class="chip">${esc(abbr(ctx.home))} ${k.replace("-", " · " + abbr(ctx.away) + " ")} <span class="d">${(c / N * 100).toFixed(1)}%</span></span>`).join("")}</div></div>`;
 }
 
