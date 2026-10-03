@@ -196,6 +196,51 @@ svg text{font-family:var(--mono);font-size:10px;fill:var(--dim)}
 .sel{width:20px;height:20px;accent-color:var(--pink);cursor:pointer}
 .pb input{background:#000;color:#fff;border:1px solid var(--edge2);border-radius:8px;padding:6px 8px;font:700 13px var(--mono);width:90px;text-align:center}
 @media (max-width:760px){.feat-row{grid-template-columns:1fr}.lg-card .row2{grid-template-columns:90px repeat(3,1fr);font-size:11px}}
+.home-hero .eotw{padding:28px 24px 24px;border-width:3px;box-shadow:0 0 34px rgba(255,210,63,.45),inset 0 0 40px rgba(255,210,63,.08)}
+.home-hero .eotw .pick{font-size:clamp(42px,8vw,80px)}
+.sec.sub{font-size:clamp(18px,2.6vw,24px);margin-top:26px}
+.feat{min-height:0;padding:12px 14px;border-radius:14px}
+.feat .ttl{font-size:11px;letter-spacing:.2em}
+.feat .vsrow{margin:8px 0 4px}.feat .vsrow img{width:44px;height:44px}.feat .nm{font-size:13.5px}
+.feat .grid3 .v{font-size:13px}
+.feat-am .wm{width:160px;right:-24px;bottom:-26px}
+.lv-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.lv{border:1px solid var(--edge2);border-radius:16px;background:linear-gradient(160deg,var(--panel2),var(--panel));padding:14px 16px;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.lv:hover{border-color:var(--blue)}
+.lv.edge{border-color:var(--gold);box-shadow:0 0 16px rgba(255,210,63,.3)}.lv.strong{border:2px solid var(--green);box-shadow:0 0 20px rgba(57,255,136,.35)}
+.lv.open{grid-column:1/-1;cursor:default}
+.lv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.lv-clock{font:900 14px var(--tech);letter-spacing:.08em;color:var(--green)}
+.lv-row{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;padding:3px 0}
+.lv-row img{width:32px;height:32px;object-fit:contain}
+.lv-row .nm{font:800 17px Inter;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-row .sc{font:900 40px/1 var(--tech);color:#fff;text-shadow:0 0 12px rgba(255,255,255,.25)}
+.lv-row.trail .nm,.lv-row.trail .sc{color:var(--dim);text-shadow:none}
+.lv-sit{font:600 12px var(--mono);color:var(--dim);margin-top:4px}
+.lv-lines{display:flex;gap:18px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--edge);font:600 12px var(--mono);color:var(--dim)}
+.lv-lines b{color:#fff;font-size:14px;margin-left:4px}
+.ind{font:900 11px var(--tech);letter-spacing:.12em;padding:4px 10px;border-radius:999px;border:1px solid var(--edge2);color:var(--dim)}
+.ind.live{color:#000;background:var(--gold);border-color:var(--gold);box-shadow:var(--y-glow)}
+.ind.strong{color:#000;background:var(--green);border-color:var(--green);box-shadow:var(--g-glow);animation:pulse 1.6s infinite}
+.lv-more{font:700 11px var(--tech);letter-spacing:.12em;color:var(--blue);margin-top:10px;text-align:center}
+.lv-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--edge2);cursor:auto}
+.lv.open .lv-detail{display:block}
+.lv-detail h4{font:900 12px var(--tech);letter-spacing:.16em;color:var(--blue);margin:16px 0 8px}
+.lv-detail table{width:100%;border-collapse:collapse;font:600 12.5px var(--mono)}
+.lv-detail th{font:700 10px var(--tech);letter-spacing:.1em;color:var(--dim);text-align:right;padding:6px 8px;border-bottom:1px solid var(--edge2)}
+.lv-detail th:first-child,.lv-detail td:first-child{text-align:left}
+.lv-detail td{padding:7px 8px;border-bottom:1px dashed var(--edge);text-align:right}
+.lv-move{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.lv-move>div{background:rgba(0,0,0,.35);border:1px solid var(--edge);border-radius:12px;padding:10px 12px;font:600 12.5px var(--mono)}
+.lv-move .k{font:700 10px var(--tech);letter-spacing:.12em;color:var(--dim);margin-bottom:4px}
+.lv-why{font:500 13.5px/1.55 Inter;color:#e8e3f5}
+.lv-edgebox{border:2px solid var(--gold);border-radius:14px;padding:12px 14px;background:linear-gradient(160deg,#1d1205,#0d0717);box-shadow:0 0 18px rgba(255,210,63,.3);margin-top:10px}
+.lv-edgebox.strong{border-color:var(--green);box-shadow:0 0 18px rgba(57,255,136,.3)}
+.lv-edgebox .bet{font:400 32px/1.1 var(--disp);letter-spacing:.04em;color:var(--gold);margin:4px 0 8px}
+.lv-sum{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+.lv-sum .stat{flex:1;min-width:120px}
+details.how summary{cursor:pointer;font:700 12px var(--tech);letter-spacing:.12em;color:var(--dim)}
+@media (max-width:760px){.lv-row .sc{font-size:34px}.lv-row .nm{font-size:15px}.lv-detail table{font-size:11px}.lv-detail td,.lv-detail th{padding:6px 4px}}
 footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
 @media (max-width:960px){.stats{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}}
 @media (max-width:680px){.hero{grid-template-columns:1fr}.status{min-width:0}.stats{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4{grid-template-columns:1fr}
@@ -381,8 +426,8 @@ function divBar(label, v, max, favor) { const w = Math.min(Math.abs(v) / max, 1)
 /* ---------- HOME ---------- */
 function home() {
   let h = "";
-  h += `<h2 class="sec">TOP OFFICIAL PLAY <small>the model's best bet on the record this week</small></h2>` + topPlay();
-  h += `<h2 class="sec" style="color:#ff9a3c">COLLEGE GAMEDAY <span style="color:var(--dim)">|</span> <span style="color:#fff;text-shadow:0 0 10px #8c1d2f">${esc(((D.featured || {}).team || "FEATURED").toUpperCase())} GAME</span></h2><div class="feat-row">${gdCard()}${featCard()}</div>`;
+  h += `<h2 class="sec">★ OFFICIAL PLAY <small>the model's best bet on the record this week</small></h2><div class="home-hero">${topPlay()}</div>`;
+  h += `<h2 class="sec sub" style="color:#ff9a3c">COLLEGE GAMEDAY <span style="color:var(--dim)">|</span> <span style="color:#fff;text-shadow:0 0 10px #8c1d2f">${esc(((D.featured || {}).team || "FEATURED").toUpperCase())} GAME</span></h2><div class="feat-row">${gdCard()}${featCard()}</div>`;
   const topId = D.top_play ? D.top_play.gid + "|" + D.top_play.label : "";
   const others = D.open_bets.filter(b => b.type === "single" && !b.now_note && new Date(b.kickoff) > Date.now()
       && !(b.now_ev != null && b.now_ev <= 0) && b.gid + "|" + b.pick !== topId).map(b => G[b.gid]).filter(Boolean);
@@ -1138,19 +1183,111 @@ function liveEdges(gs, lm, pre) {
   }
   return out;
 }
-function teamLine(gs) {
-  const poss = id => gs.poss === id && gs.state === "in" ? ' <span title="possession">🏈</span>' : "";
-  return `<div class="score"><span>${gs.away.logo ? `<img src="${esc(gs.away.logo)}" style="width:26px;height:26px;vertical-align:middle" loading="lazy">` : ""} <span class="tm">${esc(gs.away.abbr)}${poss(gs.away.id)}</span> ${gs.away.score}</span>
-    <span class="tm" style="font-size:12px">${gs.state === "in" ? '<span class="livetag"><span class="dot"></span>' + esc(gs.detail) + "</span>" : esc(gs.detail || "")}</span>
-    <span>${gs.home.score} <span class="tm">${poss(gs.home.id)}${esc(gs.home.abbr)}</span> ${gs.home.logo ? `<img src="${esc(gs.home.logo)}" style="width:26px;height:26px;vertical-align:middle" loading="lazy">` : ""}</span></div>
-    ${gs.state === "in" && gs.down ? `<div class="tiny mono muted" style="text-align:center">${esc(gs.down)}</div>` : ""}`;
+const tName = t => t.name || t.abbr;
+const favLine = (h, gs) => h == null ? "–" : h === 0 ? "PICK" : h < 0 ? `${gs.home.abbr} ${line(h)}` : `${gs.away.abbr} ${line(-h)}`;
+const fairOdds = p => p == null ? "–" : odds(amer(1 / Math.min(0.99, Math.max(0.01, p))));
+const clockTxt = gs => gs.state === "post" ? "FINAL" : gs.state === "pre" ? fmtTime(gs.start) : gs.period > 4 ? "OT " + (gs.clock || "") : `Q${gs.period} · ${gs.clock || ""}`;
+function liveCalc(gs) {
+  const pre = pregame(gs), lm = liveModel(gs, pre), lm0 = lm ? liveModel(gs, pre, 0) : null, all = lm ? liveEdges(gs, lm, pre) : [];
+  const ok = all.filter(c => c.ok).sort((a, b) => b.ev - a.ev);
+  const strong = ok.find(c => c.ev >= 0.12 && c.conf >= 70);
+  return {pre, lm, lm0, all, ok, level: !lm ? "nomodel" : !gs.odds ? "noline" : strong ? "strong" : ok.length ? "live" : "none"};
 }
+const indHTML = lv => lv === "strong" ? '<span class="ind strong">STRONG LIVE EDGE</span>' : lv === "live" ? '<span class="ind live">LIVE EDGE</span>'
+  : lv === "nomodel" ? '<span class="ind">NO MODEL</span>' : lv === "noline" ? '<span class="ind">NO LIVE LINE</span>' : '<span class="ind">NO EDGE</span>';
+function scoreRows(gs) {
+  const row = (t, other) => `<div class="lv-row ${gs.state !== "pre" && t.score < other.score ? "trail" : ""}">${t.logo ? `<img src="${esc(t.logo)}" alt="" loading="lazy">` : "<span></span>"}
+    <span class="nm">${esc(tName(t))}${gs.state === "in" && gs.poss === t.id ? ' <span title="has the ball">🏈</span>' : ""}</span><span class="sc">${gs.state === "pre" ? "" : t.score}</span></div>`;
+  return row(gs.away, gs.home) + row(gs.home, gs.away);
+}
+function whyChanged(gs, lm, pre) {
+  const H = gs.home, A = gs.away, out = [], o = gs.odds;
+  const exp = pre.mu * lm.elapsed / 60, lead = lm.M;
+  const leadTxt = lead === 0 ? "The game is tied" : `${tName(lead > 0 ? H : A)} leads by ${Math.abs(lead)}`;
+  out.push(`${leadTxt} after ${Math.round(lm.elapsed)} minutes. Before kickoff, ${tName(exp >= 0 ? H : A)} was expected to be up about ${Math.abs(exp).toFixed(0)} by now, so the scoreboard is ${Math.abs(lead - exp) < 3 ? "roughly on script" : `${Math.abs(lead - exp).toFixed(0)} points ${lead - exp > 0 ? "better for " + tName(H) : "better for " + tName(A)} than expected`}.`);
+  if (lm.sh && lm.sa && lm.sh.plays && lm.sa.plays)
+    out.push(`Yards per play: ${H.abbr} ${(lm.sh.yds / lm.sh.plays).toFixed(1)}, ${A.abbr} ${(lm.sa.yds / lm.sa.plays).toFixed(1)} (total yards ${lm.sh.yds}-${lm.sa.yds}).`);
+  if (lm.sh && lm.sa && (lm.sh.to || lm.sa.to)) out.push(`Turnovers: ${H.abbr} ${lm.sh.to}, ${A.abbr} ${lm.sa.to}.`);
+  const expPts = pre.t * lm.elapsed / 60;
+  out.push(`${lm.PT} points so far vs about ${expPts.toFixed(0)} expected by now, so scoring is ${lm.PT > expPts * 1.15 ? "running hot" : lm.PT < expPts * 0.85 ? "running slow" : "close to the pregame pace"}.`);
+  if (gs.state === "in" && gs.poss && gs.ytg != null && gs.ytg <= 20) out.push(`${tName(gs.poss === H.id ? H : A)} has the ball in the red zone right now.`);
+  return out.join(" ");
+}
+function whyLikes(c, gs, lm) {
+  const H = gs.home, A = gs.away, out = [];
+  if (c.mk === "Total") {
+    if (lm.sh && lm.sa) { const yp = (lm.sh.yds + lm.sa.yds) / 13.5;
+      out.push(c.label.startsWith("Over")
+        ? `The offenses have piled up ${lm.sh.yds + lm.sa.yds} yards, worth about ${yp.toFixed(0)} points at the usual rate, but only ${lm.PT} are on the board. Stalled drives, turnovers and missed kicks don't usually keep happening at that rate.`
+        : `${lm.PT} points have been scored on only ${lm.sh.yds + lm.sa.yds} yards (about ${yp.toFixed(0)} points' worth). Short fields, turnovers or one-off big plays inflated the score, and the model expects that to cool off.`); }
+    out.push(`Book ${c.mline} vs model ${c.modelLine}.`);
+  } else {
+    const isH = c.label.startsWith(tName(H)), T = isH ? H : A, O = isH ? A : H, ts = isH ? lm.sh : lm.sa, os = isH ? lm.sa : lm.sh;
+    if (c.close && c.mk === "Spread") out.push(`The book has moved ${T.abbr} from ${line(c.close.line)} before kickoff to ${line(c.price != null ? (isH ? gs.odds.spH.live.line : gs.odds.spA.live.line) : null)} now.`);
+    if (ts && os && ts.plays && os.plays) {
+      const share = ts.yds / Math.max(1, ts.yds + os.yds), pts = (isH ? H.score : A.score) / Math.max(1, lm.PT);
+      out.push(`${tName(T)} have ${Math.round(share * 100)}% of the total yards (${(ts.yds / ts.plays).toFixed(1)} vs ${(os.yds / os.plays).toFixed(1)} yards per play) but ${Math.round(pts * 100)}% of the points, so they've played better than the score shows.`);
+      if (ts.to > os.to) out.push(`${ts.to - os.to} extra turnover${ts.to - os.to > 1 ? "s" : ""} have cost them. Turnovers are mostly luck and don't predict the rest of the game.`);
+    }
+    out.push(`The model thinks the market is overreacting to the scoreboard.`);
+  }
+  return out.join(" ");
+}
+function edgeBox(c, gs) {
+  const strong = c.ev >= 0.12 && c.conf >= 70;
+  return `<div class="lv-edgebox ${strong ? "strong" : ""}"><div class="lbl tech" style="color:${strong ? "var(--green)" : "var(--gold)"};font-size:12px;letter-spacing:.2em">${strong ? "STRONG " : ""}NEW LIVE EDGE · ${esc(c.trend)}</div>
+    <div class="bet">${esc(c.label)} <span class="muted" style="font-size:.55em">${odds(c.price)} · ${esc(gs.odds.book)}</span></div>
+    <div class="lv-move"><div><div class="k">SPORTSBOOK</div>${esc(c.mline)} (${odds(c.price)})</div><div><div class="k">MODEL FAIR</div>${esc(c.modelLine)} (${fairOdds(c.p)})</div>
+     <div><div class="k">MODEL EDGE</div><b class="g">${c.mk === "Moneyline" ? "" : num(Math.abs(c.gap)) + " pts · "}${spct(c.ev)} EV</b></div><div><div class="k">WIN CHANCE · CONFIDENCE</div>${pct(c.p)} · <b style="color:${confColor(c.conf)}">${c.conf}</b></div></div>
+    <h4>WHY THE MODEL LIKES IT</h4><div class="lv-why">${esc(whyLikes(c, gs, c.lm))}</div>
+    <div class="tiny muted" style="margin-top:6px">First flagged ${c.first ? esc(new Date(c.first.t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"})) + " at " + esc(c.first.sit) : "just now"} · experimental live model, not backtested</div></div>`;
+}
+function liveDetail(gs, k) {
+  const {pre, lm, all, ok} = k, o = gs.odds;
+  if (!lm) return '<div class="muted small">No pregame CFB Edge projection for this matchup, so the live model is off.</div>';
+  const H = gs.home, A = gs.away;
+  const preWP = Phi(pre.mu / pre.sig), preH = (pre.t + pre.mu) / 2, preA = (pre.t - pre.mu) / 2;
+  const cs = o && o.spH.close ? o.spH.close.line : null, ls = o && o.spH.live ? o.spH.live.line : null;
+  const ct = o && o.ov.close ? o.ov.close.line : null, lt = o && o.ov.live ? o.ov.live.line : null;
+  const best = mk => all.filter(c => c.mk === mk).sort((a, b) => b.ev - a.ev)[0];
+  const val = mk => { const b = best(mk); if (!b) return '<span class="muted">no line</span>'; if (b.ok) return `<b class="g">VALUE: ${esc(b.label)}</b>`;
+    return `<span class="muted">no value${b.ev > 0.03 ? ` (${esc(b.label)} ${spct(b.ev)}: ${esc(b.why[0] || "")})` : ""}</span>`; };
+  const ds = cs != null && ls != null ? ls - cs : null, dt = ct != null && lt != null ? lt - ct : null;
+  const moveS = ds == null ? "–" : ds === 0 ? "no change" : `<b class="y">${Math.abs(ds)} pts toward ${esc(ds > 0 ? A.abbr : H.abbr)}</b>`;
+  const moveT = dt == null ? "–" : dt === 0 ? "no change" : `<b class="y">${dt > 0 ? "up" : "down"} ${Math.abs(dt)} pts</b>`;
+  const mlRow = o && (o.mlH.live || o.mlH.close) ? `<tr><td>${H.abbr} moneyline</td><td>${o.mlH.close ? odds(o.mlH.close.odds) : "–"}</td><td>${o.mlH.live && o.mlH.live.odds != null ? odds(o.mlH.live.odds) : "OFF"}</td><td>${fairOdds(lm.wp)}</td><td class="small">${val("Moneyline")}</td></tr>` : "";
+  return `${ok.map(c => edgeBox(c, gs)).join("")}
+    <h4>WHAT CHANGED SINCE KICKOFF</h4>
+    <div class="lv-move"><div><div class="k">SPREAD MOVEMENT</div>Pregame ${esc(favLine(cs, gs))} → now ${esc(favLine(ls, gs))}<br>${moveS}</div>
+     <div><div class="k">TOTAL MOVEMENT</div>Pregame ${ct ?? "–"} → now ${lt ?? "–"}<br>${moveT}</div></div>
+    <h4>WHY THE LINE MOVED</h4><div class="lv-why">${esc(whyChanged(gs, lm, pre))}</div>
+    <h4>PREGAME VS LIVE</h4><div class="tw"><table><thead><tr><th>Metric</th><th>Pregame</th><th>Live book</th><th>Model now</th><th>Model view</th></tr></thead><tbody>
+     <tr><td>Spread</td><td>${esc(favLine(cs, gs))}</td><td>${esc(favLine(ls, gs))}</td><td>${esc(favLine(-lm.mu, gs))}</td><td class="small">${val("Spread")}</td></tr>
+     <tr><td>Total</td><td>${ct ?? "–"}</td><td>${lt ?? "–"}</td><td>${num(lm.muT)}</td><td class="small">${val("Total")}</td></tr>
+     ${mlRow}
+     <tr><td>${esc(H.abbr)} win prob</td><td>${pct(preWP, 0)}</td><td>${gs.espnWP != null ? "ESPN " + pct(gs.espnWP, 0) : "–"}</td><td>${pct(lm.wp, 0)}</td><td class="small muted">${Math.abs(lm.wp - preWP) >= 0.1 ? (lm.wp > preWP ? "up " : "down ") + pct(Math.abs(lm.wp - preWP), 0) : "little change"}</td></tr>
+     <tr><td>Projected score</td><td>${A.abbr} ${num(preA, 0)}-${num(preH, 0)} ${H.abbr}</td><td></td><td>${A.abbr} ${num(lm.projA, 0)}-${num(lm.projH, 0)} ${H.abbr}</td><td></td></tr></tbody></table></div>
+    <h4>SPORTSBOOK ODDS VS MODEL FAIR ODDS</h4><div class="tw"><table><thead><tr><th>Bet</th><th>Book</th><th>Model fair</th><th>Win chance</th><th>EV</th><th>Conf</th></tr></thead><tbody>
+     ${all.map(c => `<tr><td>${esc(c.label)}</td><td>${odds(c.price)}</td><td>${fairOdds(c.p)}</td><td>${pct(c.p)}</td><td class="${c.ok ? "g" : c.ev > 0 ? "" : "r"}">${spct(c.ev)}</td><td style="color:${confColor(c.conf)}">${c.conf}</td></tr>`).join("") || '<tr><td colspan="6" class="muted">No live lines posted right now (often suspended during scores and reviews).</td></tr>'}</tbody></table></div>
+    <div class="tiny muted" style="margin-top:8px">Model's pregame start: ${pre.anchored ? "70% DraftKings closing line + 30% " : ""}${esc(pre.src)}. In-game evidence weight right now: ${Math.round(lm.w * 100)}%.${G[gs.id] ? ` <button class="btn ghost" data-g="${gs.id}" style="padding:3px 10px;margin-left:6px">FULL PREGAME BREAKDOWN</button>` : ""}</div>`;
+}
+function liveCard(gs) {
+  const k = liveCalc(gs), o = gs.odds, open = LIVE_OPEN.has(gs.id);
+  const ls = o && o.spH.live ? o.spH.live.line : null, lt = o && o.ov.live ? o.ov.live.line : null;
+  return `<div class="lv ${k.level === "strong" ? "strong" : k.level === "live" ? "edge" : ""} ${open ? "open" : ""}" data-lid="${gs.id}">
+    <div class="lv-top"><span class="lv-clock">${gs.state === "in" ? '<span class="livetag"><span class="dot"></span></span> ' : ""}${esc(clockTxt(gs))}</span>${indHTML(k.level)}</div>
+    ${scoreRows(gs)}
+    ${gs.state === "in" && gs.down ? `<div class="lv-sit">${esc(gs.down)}</div>` : ""}
+    <div class="lv-lines"><span>SPREAD<b>${esc(favLine(ls, gs))}</b></span><span>TOTAL<b>${lt ?? "–"}</b></span></div>
+    <div class="lv-more">${open ? "▲ HIDE ANALYSIS" : "▼ TAP FOR MODEL ANALYSIS"}</div>
+    <div class="lv-detail">${open ? liveDetail(gs, k) : ""}</div></div>`;
+}
+const LIVE_OPEN = new Set();
 function liveSlotHTML(gs) {
   if (!gs || gs.state === "pre") return "";
-  const pre = pregame(gs), lm = liveModel(gs, pre), edges = liveEdges(gs, lm, pre).filter(c => c.ok);
-  return `<div class="lbox ${gs.state === "post" ? "post" : ""}">${teamLine(gs)}
-    ${lm ? `<div class="mono small" style="margin-top:6px">MODEL: ${esc(gs.home.abbr)} win <b class="g">${pct(lm.wp)}</b>${gs.espnWP != null ? ` <span class="muted">(ESPN ${pct(gs.espnWP)})</span>` : ""} · proj final <b>${esc(gs.away.abbr)} ${num(lm.projA, 0)} - ${esc(gs.home.abbr)} ${num(lm.projH, 0)}</b></div>` : ""}
-    ${edges.length ? edges.map(c => `<div class="chip official" style="margin-top:6px">⚡ LIVE EDGE: ${esc(c.label)} ${odds(c.price)} · EV ${spct(c.ev)}</div>`).join("") : ""}</div>`;
+  const k = liveCalc(gs);
+  return `<div class="lbox ${gs.state === "post" ? "post" : ""}"><div class="lv-top"><span class="lv-clock">${esc(clockTxt(gs))}</span>${gs.state === "in" ? indHTML(k.level) : ""}</div>${scoreRows(gs)}
+    ${k.lm && gs.state === "in" ? `<div class="mono tiny muted" style="margin-top:4px">Model: ${esc(gs.home.abbr)} win ${pct(k.lm.wp, 0)} · proj ${esc(gs.away.abbr)} ${num(k.lm.projA, 0)}-${num(k.lm.projH, 0)} ${esc(gs.home.abbr)}</div>` : ""}</div>`;
 }
 async function fillSlots() {
   const ids = [...new Set([...document.querySelectorAll("[data-lg]")].map(e => e.dataset.lg))];
@@ -1162,49 +1299,36 @@ async function fillSlots() {
 
 /* ---------- GAMEDAY LIVE tab ---------- */
 function liveView() {
-  return `<h2 class="sec" style="color:var(--green);text-shadow:var(--g-glow)">● GAMEDAY LIVE <small>scores, live lines and the live model refresh every 30 seconds · <span id="liveStamp">loading…</span></small></h2>
-   <div class="panel small muted">Live data: ESPN's public scoreboard and DraftKings live lines. The live model starts from a pregame number (70% closing line + 30% CFB Edge, because the backtest shows the model doesn't beat closing lines on its own) and blends in score, time, possession & field position, yardage efficiency, turnovers and pace (in-game evidence weight grows with time, up to 50%). A live bet is shown only if EV ≥ 8%, win chance ≥ 57%, the model is ≥ 4 pts off the live spread (5 on totals), the live line is in sync with the game, at least half the edge comes from in-game evidence (not the pregame number), ESPN's own live win probability agrees within 15 points, and it's not the opening minutes, the final 8 minutes, or a blowout. <b class="o">Experimental - the live model is not backtested.</b> Team totals and live player props have no free live feed, so they're not priced.</div>
-   <h3>⚡ LIVE BETTING OPPORTUNITIES</h3><div id="liveOpps"><div class="empty">Loading live games…</div></div>
-   <h3>LIVE NOW</h3><div id="liveGames" class="grid auto"></div>
-   <h3>STARTING SOON</h3><div id="liveSoon" class="grid auto"></div>
-   <h3>FINAL TODAY</h3><div id="liveFinal" class="grid auto"></div>`;
+  return `<h2 class="sec" style="color:var(--green);text-shadow:var(--g-glow)">● GAMEDAY LIVE <small>updates every 30 seconds · <span id="liveStamp">loading…</span></small></h2>
+   <div id="liveSum"></div>
+   <div id="liveGames" class="lv-wrap"><div class="empty">Loading live games…</div></div>
+   <h2 class="sec sub">STARTING SOON</h2><div id="liveSoon" class="lv-wrap"></div>
+   <h2 class="sec sub">FINAL</h2><div id="liveFinal" class="lv-wrap"></div>
+   <details class="how panel" style="margin-top:22px"><summary>HOW THE LIVE MODEL WORKS</summary><div class="small muted" style="margin-top:8px">Scores, game state, box scores, ESPN win probability and DraftKings live lines all come from ESPN's free public feed. The live model starts from a pregame number (70% closing line + 30% CFB Edge, because the backtest shows the model doesn't beat closing lines on its own). It then blends in yardage efficiency, actual scoring pace and the current possession. The weight on in-game evidence grows with time, up to 50%.<br><br>A game gets <b>LIVE EDGE</b> only when every rule passes:<br>• EV is at least 8% and the win chance at least 57%.<br>• The model is at least 4 points off the spread, or 5 off the total.<br>• At least half the edge comes from in-game evidence, not the pregame number.<br>• The live line agrees with ESPN's live win probability, so suspended or stale lines are rejected.<br>• The gap is inside the model's own uncertainty, and EV is 25% or less.<br>• It isn't the first 5 minutes, the last 8 minutes or a blowout.<br><br><b>STRONG LIVE EDGE</b> also needs EV of at least 12% and confidence of at least 70. <b class="o">Experimental: the live model is not backtested.</b></div></details>`;
 }
 async function renderLive() {
   const board = await liveBoard(); if (route().v !== "live") return;
   const now = Date.now(), live = board.filter(b => b.state === "in");
-  const soon = board.filter(b => b.state === "pre" && new Date(b.start) - now < 6 * 3600e3 && new Date(b.start) > now - 600e3).sort((a, b) => new Date(a.start) - new Date(b.start));
+  const soon = board.filter(b => b.state === "pre" && new Date(b.start) - now < 6 * 3600e3 && new Date(b.start) > now - 900e3).sort((a, b) => new Date(a.start) - new Date(b.start));
   const fin = board.filter(b => b.state === "post" && now - new Date(b.start) < 16 * 3600e3);
-  const sums = await Promise.all(live.map(b => liveSummary(b.id)));
-  const opps = [], cards = [];
-  sums.filter(Boolean).forEach(gs => {
-    const pre = pregame(gs), lm = liveModel(gs, pre), e = liveEdges(gs, lm, pre);
-    e.filter(c => c.ok).forEach(c => opps.push(c));
-    const o = gs.odds, cell = (lv, cl, fmt) => `<div>${cl ? fmt(cl) : "–"}</div><div class="w">${lv ? fmt(lv) : "–"}</div>`;
-    const spF = x => line(x.line) + (x.odds ? ` (${odds(x.odds)})` : ""), totF = x => x.line + (x.odds ? ` (${odds(x.odds)})` : ""), mlF = x => odds(x.odds);
-    cards.push(`<div class="lg-card" ${G[gs.id] ? `data-g="${gs.id}"` : ""} style="cursor:${G[gs.id] ? "pointer" : "default"}">${teamLine(gs)}
-      <div class="row2"><div class="h">${esc(gs.home.abbr)} LINES</div><div class="h">PREGAME</div><div class="h">LIVE (${esc(o ? o.book : "–")})</div><div class="h">CFB EDGE LIVE</div>
-       <div class="h">SPREAD</div>${o ? cell(o.spH.live, o.spH.close, spF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? fl(-lm.mu) : "–"}</div>
-       <div class="h">TOTAL</div>${o ? cell(o.ov.live, o.ov.close, totF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? num(lm.muT) : "–"}</div>
-       <div class="h">MONEYLINE</div>${o ? cell(o.mlH.live, o.mlH.close, mlF) : "<div>–</div><div>–</div>"}<div class="b">${lm ? pct(lm.wp) : "–"}</div></div>
-      ${lm ? `<div class="mono small" style="margin-top:6px">Projected final: <b>${esc(gs.away.abbr)} ${num(lm.projA, 0)} - ${esc(gs.home.abbr)} ${num(lm.projH, 0)}</b> · ${esc(gs.home.abbr)} win ${pct(lm.wp)}${gs.espnWP != null ? ` (ESPN ${pct(gs.espnWP)})` : ""} · pregame start: ${pre.anchored ? "70% closing line + 30% " : ""}${esc(pre.src)}</div>` :
-        '<div class="tiny muted" style="margin-top:6px">No pregame CFB Edge projection for this matchup (FCS opponent) - live model off.</div>'}
-      ${e.filter(c => c.ok).map(c => `<div class="chip official" style="margin-top:6px">⚡ ${esc(c.label)} ${odds(c.price)} · EV ${spct(c.ev)}</div>`).join("")}</div>`);
-  });
+  const sums = (await Promise.all(live.map(b => liveSummary(b.id)))).filter(Boolean);
+  if (route().v !== "live") return;
+  const rank = gs => { const lv = liveCalc(gs).level; return lv === "strong" ? 0 : lv === "live" ? 1 : 2; };
+  sums.sort((a, b) => rank(a) - rank(b));
+  const nEdge = sums.filter(gs => rank(gs) < 2).length;
+  $("#liveSum").innerHTML = `<div class="lv-sum"><div class="stat"><div class="v g">${sums.length}</div><div class="k">Games live</div></div>
+    <div class="stat"><div class="v ${nEdge ? "y" : ""}">${nEdge}</div><div class="k">With a live edge</div></div><div class="stat"><div class="v">${soon.length}</div><div class="k">Starting soon</div></div></div>
+    ${nEdge ? "" : '<div class="panel" style="text-align:center;font:800 15px var(--tech);letter-spacing:.12em;color:var(--dim)">NO LIVE BETTING EDGE DETECTED</div>'}`;
+  $("#liveGames").innerHTML = sums.map(liveCard).join("") || '<div class="empty">No FBS games in progress right now.</div>';
+  const pre = b => ({...b, state: "pre"});
+  $("#liveSoon").innerHTML = soon.slice(0, 12).map(b => `<div class="lv" ${G[b.id] ? `data-g="${b.id}"` : ""}><div class="lv-top"><span class="lv-clock" style="color:var(--blue)">${esc(fmtTime(b.start))}</span>${G[b.id] ? statusChip(G[b.id].status) : ""}</div>${scoreRows(pre(b))}
+     <div class="lv-lines"><span>${esc(b.tv || "")}</span>${G[b.id] ? `<span>SPREAD<b>${esc(abbr(G[b.id].home))} ${line(G[b.id].market.spread)}</b></span><span>TOTAL<b>${num(G[b.id].market.total)}</b></span>` : ""}</div></div>`).join("") || '<div class="empty small">Nothing in the next 6 hours.</div>';
+  $("#liveFinal").innerHTML = fin.map(b => `<div class="lv" style="cursor:default"><div class="lv-top"><span class="lv-clock" style="color:var(--dim)">FINAL</span></div>${scoreRows(b)}</div>`).join("") || '<div class="empty small">No finals yet.</div>';
   const stamp = $("#liveStamp"); if (stamp) stamp.textContent = "updated " + new Date().toLocaleTimeString([], {hour: "numeric", minute: "2-digit", second: "2-digit"});
-  opps.sort((a, b) => b.ev - a.ev);
-  $("#liveOpps").innerHTML = opps.length ? `<div class="grid auto">${opps.map(c => `<div class="opp" ${G[c.gs.id] ? `data-g="${c.gs.id}"` : ""}>
-      <div class="top"><span class="livetag"><span class="dot"></span>LIVE EDGE</span><span class="chip ${c.trend === "INCREASING" ? "good" : c.trend === "DECREASING" ? "bad" : ""}">EDGE ${esc(c.trend)}</span></div>
-      <div class="muted small">${esc(c.gs.away.name)} @ ${esc(c.gs.home.name)} · ${esc(c.gs.detail)} · ${c.gs.away.score}-${c.gs.home.score}</div>
-      <div style="font:400 30px/1.1 var(--disp);letter-spacing:.04em;color:var(--gold);margin:6px 0">${esc(c.label)} <span class="muted" style="font-size:.55em">${odds(c.price)} · ${esc(c.gs.odds.book)}</span></div>
-      <div class="lines"><div><div class="k">SPORTSBOOK</div><div class="v w">${esc(c.mline)}</div></div><div><div class="k">MODEL</div><div class="v b">${esc(c.modelLine)}</div></div><div><div class="k">EDGE</div><div class="v g">${spct(c.ev)} EV</div></div></div>
-      <div class="lines"><div><div class="k">WIN CHANCE</div><div class="v">${pct(c.p)}</div></div><div><div class="k">CONFIDENCE</div><div class="v" style="color:${confColor(c.conf)}">${c.conf}</div></div><div><div class="k">PTS OFF LINE</div><div class="v g">${num(Math.abs(c.gap))}</div></div></div>
-      <div class="small" style="margin-top:6px">${esc(c.reason)}</div>
-      <div class="tiny muted" style="margin-top:4px">Flagged ${c.first ? esc(new Date(c.first.t).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"})) + " at " + esc(c.first.sit) : "now"} · experimental live model</div></div>`).join("")}</div>`
-    : `<div class="eotw" style="text-align:center;padding:22px"><div class="lbl">LIVE MODEL</div><div class="pick" style="font-size:clamp(24px,5vw,40px)">NO LIVE BETTING EDGE DETECTED</div><div class="muted">${live.length} game${live.length === 1 ? "" : "s"} live · the model checks every 30 seconds</div></div>`;
-  $("#liveGames").innerHTML = cards.join("") || '<div class="empty">No FBS games in progress right now.</div>';
-  $("#liveSoon").innerHTML = soon.slice(0, 12).map(b => `<div class="lg-card" ${G[b.id] ? `data-g="${b.id}"` : ""}><b>${esc(b.away.name)} @ ${esc(b.home.name)}</b><div class="mono small muted">${esc(fmtTime(b.start))}${b.tv ? " · " + esc(b.tv) : ""}</div><span class="countdown" data-ko="${b.start}"></span>${G[b.id] ? `<div class="small">${statusChip(G[b.id].status)} fair ${esc(abbr(G[b.id].home))} ${fl(G[b.id].model.fair_spread)} vs ${line(G[b.id].market.spread)}</div>` : ""}</div>`).join("") || '<div class="empty small">Nothing in the next 6 hours.</div>';
-  $("#liveFinal").innerHTML = fin.map(b => `<div class="lg-card"><div class="mono"><b>${esc(b.away.abbr)} ${b.away.score} - ${esc(b.home.abbr)} ${b.home.score}</b> <span class="muted">FINAL</span></div></div>`).join("") || '<div class="empty small">No finals yet.</div>';
-  wire($("#app"));
+  $("#liveGames").onclick = e => { const c = e.target.closest("[data-lid]"); if (!c || e.target.closest(".lv-detail")) return;
+    const id = c.dataset.lid; LIVE_OPEN.has(id) ? LIVE_OPEN.delete(id) : LIVE_OPEN.add(id);
+    const gs = LV.sum[id]; if (gs) { const tmp = document.createElement("div"); tmp.innerHTML = liveCard(gs); const nc = tmp.firstElementChild; c.replaceWith(nc); wire(nc); } };
+  wire($("#liveSoon")); wire($("#liveGames"));
 }
 
 /* ---------- My Card live statuses ---------- */
@@ -1268,44 +1392,36 @@ async function refreshCard() {
     if (sum) sum.innerHTML = `<span class="mono">Legs remaining: <b>${ss.length - settled}</b> · ${lost ? '<b class="r">parlay is dead</b>' : '<b class="g">still alive</b>'} · potential payout <b class="y">$${(pl.stake * d).toFixed(2)}</b></span>`; });
 }
 
-/* ---------- featured cards ---------- */
+/* ---------- featured cards (compact; the Official Play stays the focal point) ---------- */
+function vsMini(a, b, neutral) {
+  const side = t => `<div>${t.logo ? `<img src="${esc(t.logo)}" alt="" loading="lazy">` : ""}<div class="nm">${t.ap ? `<span class="ap">${t.ap}</span>` : ""}${esc(t.school)}</div><div class="sm">${esc(t.record || "")}</div></div>`;
+  return `<div class="vsrow">${side(a)}<div class="tech" style="color:#fff">${neutral ? "VS" : "@"}</div>${side(b)}</div>`;
+}
 function gdCard() {
   const gd = D.gameday || {}, g = gd.gid ? G[gd.gid] : null;
-  if (!g) return `<div class="feat feat-gd"><div class="ttl"><img src="${esc(gd.logo || "")}" alt="" style="height:40px;background:#fff;border-radius:8px;padding:2px" onerror="this.remove()">COLLEGE GAMEDAY</div>
-    <div class="empty" style="margin-top:14px">This week's GameDay location hasn't been announced on ESPN's feed yet (usually Sunday). It appears here automatically.</div></div>`;
+  const head = `<div class="ttl"><img src="${esc(gd.logo || "")}" alt="" style="height:30px;background:#fff;border-radius:6px;padding:2px" onerror="this.remove()">COLLEGE GAMEDAY</div>`;
+  if (!g) return `<div class="feat feat-gd">${head}<div class="sm" style="margin-top:12px">This week's location isn't on ESPN's feed yet (usually announced Sunday).</div></div>`;
+  const ap = t => Object.assign({}, t, {ap: apOf(t.school)});
   const t = g.top;
-  return `<div class="feat feat-gd" data-g="${g.id}"><div class="ttl"><img src="${esc(gd.logo)}" alt="" style="height:40px;background:#fff;border-radius:8px;padding:2px" onerror="this.remove()">COLLEGE GAMEDAY · THIS WEEK</div>
-    <div class="vsrow"><div>${logo(g.away)}<div class="nm">${rk(g.away)}${esc(g.away.school)}</div><div class="sm">${esc(g.away.record || "")}</div></div><div class="tech" style="color:#ff9a3c">@</div>
-     <div>${logo(g.home)}<div class="nm">${rk(g.home)}${esc(g.home.school)}</div><div class="sm">${esc(g.home.record || "")}</div></div></div>
-    <div class="sm" style="text-align:center">${esc(fmtTime(g.kickoff))}${g.tv ? " · " + esc(g.tv) : ""}${gd.venue ? " · " + esc(gd.venue) : ""}</div>
-    <div class="grid3"><div><div class="k">MARKET</div><div class="v">${esc(abbr(g.home))} ${line(g.market.spread)}</div></div><div><div class="k">CFB EDGE FAIR</div><div class="v b">${esc(abbr(g.home))} ${fl(g.model.fair_spread)}</div></div>
-     <div><div class="k">${esc(abbr(g.home))} WIN</div><div class="v g">${pct(g.model.win_home, 0)}</div></div></div>
-    <div class="sm" style="margin-top:8px">${t ? `${statusChip(t.status)} ${esc(t.label)} ${odds(t.price)} · EV ${spct(t.ev)}` : ""}</div>
+  return `<div class="feat feat-gd" data-g="${g.id}">${head}${vsMini(ap(g.away), ap(g.home), g.neutral)}
+    <div class="sm" style="text-align:center">${esc(fmtTime(g.kickoff))}${g.tv ? " · " + esc(g.tv) : ""}</div>
+    <div class="grid3"><div><div class="k">SPREAD</div><div class="v">${esc(abbr(g.home))} ${line(g.market.spread)}</div></div><div><div class="k">TOTAL</div><div class="v">${num(g.market.total)}</div></div>
+     <div><div class="k">MODEL</div><div class="v b">${esc(abbr(g.home))} ${fl(g.model.fair_spread)}</div></div></div>
+    <div class="sm" style="margin-top:8px;text-align:center">${t && (t.status === "official" || t.status === "strong" || t.status === "lean") ? `${statusChip(t.status)} ${esc(t.label)}` : '<span class="chip">No model bet</span>'}</div>
     <div class="liveslot" data-lg="${g.id}"></div></div>`;
 }
 function featCard() {
-  const F = D.featured; if (!F) return '<div class="feat feat-am"><div class="bar-am"></div><div class="ttl">FEATURED TEAM</div><div class="empty" style="margin-top:14px">No upcoming game found.</div></div>';
-  const me = F.home.school === F.team ? F.home : F.away, m = F.model || {}, mk = F.market || {}, wx = F.weather || {}, inj = F.injuries || {};
-  const homeMargin = m.fair_spread != null ? -m.fair_spread : null;
-  const projH = m.fair_total != null && homeMargin != null ? (m.fair_total + homeMargin) / 2 : null, projA = projH != null ? m.fair_total - projH : null;
-  const myWin = m.win_home != null ? (me === F.home ? m.win_home : 1 - m.win_home) : null;
-  const apb = t => t.ap ? `<span class="ap">${t.ap}</span>` : "";
-  const t = F.top;
+  const F = D.featured; if (!F) return '<div class="feat feat-am"><div class="bar-am"></div><div class="ttl">FEATURED TEAM</div><div class="sm" style="margin-top:12px">No upcoming game found.</div></div>';
+  const me = F.home.school === F.team ? F.home : F.away, m = F.model || {}, mk = F.market || {};
+  const projH = m.fair_total != null && m.fair_spread != null ? (m.fair_total - m.fair_spread) / 2 : null, projA = projH != null ? m.fair_total - projH : null;
+  const myWin = m.win_home != null ? (me === F.home ? m.win_home : 1 - m.win_home) : null, t = F.top;
   return `<div class="feat feat-am" ${G[F.gid] ? `data-g="${F.gid}"` : ""}><div class="bar-am"></div>${me.logo ? `<img class="wm" src="${esc(me.logo)}" alt="">` : ""}
-    <div class="ttl">${me.logo ? `<img src="${esc(me.logo)}" alt="" style="height:34px;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))">` : ""}★ ${esc(F.team.toUpperCase())} GAME</div>
-    <div class="vsrow"><div>${F.away.logo ? `<img src="${esc(F.away.logo)}" alt="" loading="lazy">` : ""}<div class="nm">${apb(F.away)}${esc(F.away.school)}</div><div class="sm">${esc(F.away.record || "")}</div></div>
-     <div class="tech" style="color:#fff">${F.neutral ? "VS" : "@"}</div>
-     <div>${F.home.logo ? `<img src="${esc(F.home.logo)}" alt="" loading="lazy">` : ""}<div class="nm">${apb(F.home)}${esc(F.home.school)}</div><div class="sm">${esc(F.home.record || "")}</div></div></div>
-    <div class="sm" style="text-align:center">${esc(new Date(F.kickoff).toLocaleString([], {weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"}))}${F.tv ? " · " + esc(F.tv) : ""}${F.venue ? " · " + esc(F.venue) : ""}</div>
+    <div class="ttl">${me.logo ? `<img src="${esc(me.logo)}" alt="" style="height:28px;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))">` : ""}${esc(F.team.toUpperCase())} GAME</div>
+    ${vsMini(F.away, F.home, F.neutral)}
+    <div class="sm" style="text-align:center">${esc(new Date(F.kickoff).toLocaleString([], {weekday: "short", hour: "numeric", minute: "2-digit"}))}${F.tv ? " · " + esc(F.tv) : ""}${F.venue ? " · " + esc(F.venue) : ""}</div>
     <div class="grid3"><div><div class="k">SPREAD</div><div class="v">${mk.spread != null ? esc(F.home.abbr || F.home.school) + " " + line(mk.spread) : "–"}</div></div>
-     <div><div class="k">MONEYLINE</div><div class="v">${mk.ml_home != null ? odds(mk.ml_away) + " / " + odds(mk.ml_home) : "–"}</div></div><div><div class="k">TOTAL</div><div class="v">${mk.total != null ? num(mk.total) : "–"}</div></div>
-     <div><div class="k">MODEL SCORE</div><div class="v b">${projA != null ? `${num(projA, 0)}-${num(projH, 0)}` : "–"}</div></div><div><div class="k">${esc(F.team.toUpperCase())} WIN</div><div class="v g">${pct(myWin, 0)}</div></div>
-     <div><div class="k">MODEL EDGE</div><div class="v ${m.edge_spread != null && Math.abs(m.edge_spread) >= 3 ? "g" : "w"}">${m.edge_spread != null ? sgn(m.edge_spread) + " pts" : "–"}</div></div></div>
-    <div class="sm" style="margin-top:8px">${wx.dome ? "Dome" : wx.temp != null ? `${num(wx.temp, 0)}°F · wind ${num(wx.wind, 0)} mph${wx.level ? " · weather impact " + esc(wx.level) : ""}` : ""}</div>
-    ${(F.keys || []).slice(0, 3).map(k => `<div class="tiny" style="margin-top:3px;color:#f3e6e8">• ${esc(k)}</div>`).join("")}
-    ${(inj.home && inj.home.text) || (inj.away && inj.away.text) ? `<div class="tiny" style="margin-top:6px;color:#ffb3bd">🩹 ${esc([inj.away && inj.away.text ? F.away.school + ": " + inj.away.text : "", inj.home && inj.home.text ? F.home.school + ": " + inj.home.text : ""].filter(Boolean).join(" | "))}</div>` : ""}
-    <div style="margin-top:8px">${t && (t.status === "official" || t.status === "strong") ? `${statusChip(t.status)} <b>${esc(t.label)}</b> ${odds(t.price)} · EV ${spct(t.ev)}` : `<span class="chip">No model bet on this game${t ? " · best: " + esc(t.label) + " " + spct(t.ev) + " EV" : ""}</span>`}</div>
-    <div class="tiny muted" style="margin-top:4px">Projection: ${esc(F.source || "")}</div>
+     <div><div class="k">MODEL SCORE</div><div class="v b">${projA != null ? `${num(projA, 0)}-${num(projH, 0)}` : "–"}</div></div><div><div class="k">${esc(me.abbr || F.team)} WIN</div><div class="v g">${pct(myWin, 0)}</div></div></div>
+    <div class="sm" style="margin-top:8px;text-align:center">${t && (t.status === "official" || t.status === "strong") ? `${statusChip(t.status)} <b>${esc(t.label)}</b>` : `<span class="chip">No model bet${m.edge_spread != null ? ` · edge ${sgn(m.edge_spread)} pts` : ""}</span>`}</div>
     <div class="liveslot" data-lg="${esc(F.gid)}"></div></div>`;
 }
 async function liveTick() {
