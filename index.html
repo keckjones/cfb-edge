@@ -335,6 +335,9 @@ details.how summary{cursor:pointer;font:700 12px var(--tech);letter-spacing:.12e
 .snap .k{font:800 10px var(--tech);letter-spacing:.14em;color:var(--purple,#b06cff);margin-bottom:4px}
 .ptabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.ptabs button{padding:7px 14px;border-radius:999px;border:1px solid var(--edge2);background:var(--panel);color:var(--ink);font:800 12px var(--tech);letter-spacing:.1em;cursor:pointer}
 .ptabs button.on{background:var(--gold);border-color:var(--gold);color:#000;box-shadow:var(--y-glow)}
+.lgbar .lshort{display:none}
+@media (max-width:760px){.lgbar{position:sticky;top:0;z-index:40;background:var(--bg,#07040f);padding:8px 0;margin:6px 0}.lgbar .lfull{display:none}.lgbar .lshort{display:inline}
+  #stats .stat:nth-child(1),#stats .stat:nth-child(3),#stats .stat:nth-child(4){display:none}}
 @media (max-width:760px){.recpanel{grid-template-columns:1fr}.snap{grid-template-columns:1fr}.lgbar button{min-width:0;flex:1;padding:12px 8px}}
 .bell{position:relative;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;border:2px solid var(--blue);
   background:var(--panel);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 0 12px rgba(30,227,255,.4)}
@@ -362,13 +365,13 @@ footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
 <div class="ticker" id="ticker" role="marquee" aria-label="CFB Edge ticker"></div>
 <div class="wrap">
   <header class="hero">
-    <div class="brand"><h1>CFB EDGE</h1><div class="sub">COLLEGE FOOTBALL MARKET INTELLIGENCE</div></div>
+    <div class="brand"><h1>CFB EDGE</h1><div class="sub">FOOTBALL MARKET INTELLIGENCE · NCAA + NFL</div></div>
     <div class="hdr-btns"><a class="mycard-btn" href="#card" id="mcbtn">🎟 MY CARD <span class="n" id="mcCount"></span></a><a class="tamu-btn" href="#tamu">TAMU PLAYS</a><button class="bell" id="bell" title="Alerts">🔔<span class="n" id="belln"></span></button></div>
     <div class="alerts hidden" id="alerts"></div>
     <div class="status" id="status"></div>
   </header>
-  <div class="stats" id="stats"></div>
   <div class="lgbar" id="lgbar"></div>
+  <div class="stats" id="stats"></div>
   <nav class="tabs" id="tabs"></nav>
   <main id="app"></main>
   <footer>CFB EDGE &middot; quantitative model output, not a guarantee &middot; 21+ &middot; Gambling problem? Call 1-800-GAMBLER</footer>
@@ -1860,7 +1863,7 @@ function recordPanel() {
 }
 function leagueBar() {
   const L = LEAGUE();
-  return [["NCAA", "ncaa"], ["NFL", "nfl"], ["ALL", "all"]].map(([k, c]) => `<button class="${c} ${L === k ? "on" : ""}" data-league="${k}">${k === "ALL" ? "ALL FOOTBALL" : k}</button>`).join("");
+  return [["NCAA", "ncaa"], ["NFL", "nfl"], ["ALL", "all"]].map(([k, c]) => `<button class="${c} ${L === k ? "on" : ""}" data-league="${k}">${k === "ALL" ? '<span class="lfull">ALL FOOTBALL</span><span class="lshort">ALL</span>' : k}</button>`).join("");
 }
 const activeOff = () => OFF.filter(r => inLeague(r) && ["UPCOMING", "LIVE"].includes(offStatus(r)));
 function edgeOfDay() {        // highest-quality qualifying official play: EV x probability x confidence (confidence already
