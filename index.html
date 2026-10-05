@@ -406,7 +406,7 @@ footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
   <div class="stats" id="stats"></div>
   <nav class="tabs" id="tabs"></nav>
   <main id="app"></main>
-  <footer>CFB EDGE &middot; quantitative model output, not a guarantee &middot; 21+ &middot; Gambling problem? Call 1-800-GAMBLER</footer>
+  <footer>CFB EDGE &middot; NOT A SPORTSBOOK OR BOOKIE: no bets are taken and fees pay only for model information &middot; quantitative model output, not a guarantee &middot; 21+ &middot; Gambling problem? Call 1-800-GAMBLER</footer>
 </div>
 <nav class="bnav" id="bnav"></nav>
 <aside id="side" aria-label="Site navigation"></aside><div id="sidedim"></div>
@@ -530,7 +530,7 @@ function sidebar() {
     <div class="grp ncaa">🎓 COLLEGE FOOTBALL</div>
     ${it("#ncaa", "◆", "NCAA DASHBOARD")}${it("#ncaa/picks", "★", "NCAA OFFICIAL PICKS")}${it("#ncaa/props", "◎", "PLAYER PROPS")}${it("#ncaa/games", "▦", "GAMES & FAIR LINES")}${it("#ncaa/live", "●", "NCAA LIVE")}
     ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#ncaa/tool", "⚔", "WHO WOULD WIN?")}${it("#ncaa/tamu", "👍", "TAMU PLAYS")}${it("#ncaa/results", "✓", "NCAA RESULTS")}${it("#ncaa/model", "◉", "NCAA MODEL")}
-    <div class="disc">For information and entertainment only. Not betting or financial advice. 21+. Gambling problem? Call 1-800-GAMBLER. <a href="#home" data-jump="disclosures">Disclosures</a></div>`;
+    <div class="disc"><b>Not a sportsbook or bookie.</b> CFB Edge takes no bets; any fee is only for access to model information. For information and entertainment only. Not betting or financial advice. 21+. Gambling problem? Call 1-800-GAMBLER. <a href="#home" data-jump="disclosures">Disclosures</a></div>`;
   const close = () => { $("#side").classList.remove("open"); $("#sidedim").classList.remove("on"); };
   $("#side").querySelectorAll("a").forEach(a => a.addEventListener("click", () => { close(); if (a.dataset.jump) setTimeout(() => { const el = document.getElementById(a.dataset.jump); el && el.scrollIntoView({behavior: "smooth"}); }, 80); }));
   $("#sidedim").onclick = close;
@@ -1826,7 +1826,7 @@ function infoHome() {
   const bt = D.model_health && D.model_health.spread ? D.model_health.spread : {};
   return `<div class="info-hero"><div class="lbl tech" style="color:var(--pink);letter-spacing:.3em;font-size:12px">FOOTBALL MARKET INTELLIGENCE</div>
     <h2>THE MODEL SETS THE LINE.<br>VEGAS IS THE COMPARISON.</h2>
-    <p><b>CFB Edge</b> is a quantitative prediction platform for <b>college football</b> and the <b>NFL</b>. For every game it builds its own fair spread, total and win probability from team efficiency, opponent strength, quarterback and injury status, weather, rest and travel, and hidden-state models (Kalman filters, HMM regimes). It then compares those numbers with lines from many sportsbooks. A bet becomes an <b>Official Play</b> only when the model's edge, confidence and every risk check pass. On most days that means few or no plays, which is intended.</p>
+    <p><b>CFB Edge</b> is a quantitative prediction and information service for <b>college football</b> and the <b>NFL</b>. <b>It is not a sportsbook or bookie and takes no bets</b>. For every game it builds its own fair spread, total and win probability from team efficiency, opponent strength, quarterback and injury status, weather, rest and travel, and hidden-state models (Kalman filters, HMM regimes). It then compares those numbers with lines from many sportsbooks. A bet becomes an <b>Official Play</b> only when the model's edge, confidence and every risk check pass. On most days that means few or no plays, which is intended.</p>
     <div class="cta"><a class="c2" href="#ncaa">🎓 COLLEGE FOOTBALL</a><a class="c1" href="#nfl">🏈 NFL</a><a class="c3" href="#results">OFFICIAL RECORD</a></div></div>
 
   <h2 class="sec">OFFICIAL RECORD <small>every pick CFB Edge has released, graded automatically from final scores</small></h2>${recordPanel()}
@@ -1866,7 +1866,10 @@ function infoHome() {
 
   <h2 class="sec" id="disclosures">DISCLOSURES</h2>
   <div class="discl">
-   <h4>INFORMATION AND ENTERTAINMENT ONLY</h4>CFB Edge publishes statistical model output. Nothing on this site is betting, financial, legal or investment advice, and nothing here is a solicitation to place a wager. CFB Edge does not accept wagers, hold funds or operate a sportsbook.
+   <div style="border:2px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:6px;background:rgba(255,210,63,.08);color:#fff">
+    <b class="y tech" style="letter-spacing:.14em">CFB EDGE IS NOT A SPORTSBOOK OR BOOKIE.</b><br>
+    CFB Edge does not take bets, set odds for betting, hold or transfer money for wagers, or pay out winnings. Any membership or subscription fee pays <b>only for access to information</b>: the model's predictions, fair lines, analysis and tracking tools. The fee is not a wager. It doesn't depend on any game's outcome, and nothing is won or lost based on results. If you choose to bet, you do so on your own, with a licensed sportsbook where it is legal for you.</div>
+   <h4>INFORMATION AND ENTERTAINMENT ONLY</h4>CFB Edge publishes statistical model output. Nothing on this site is betting, financial, legal or investment advice, and nothing here is a solicitation to place a wager. Odds shown come from third-party sportsbooks and are displayed only for comparison with the model.
    <h4>NO GUARANTEES</h4>Sports outcomes are uncertain. Models can be wrong, data can be late or incorrect, and past performance, including backtests, does not guarantee future results. The NFL model currently releases no official picks because it has not beaten the market in out-of-sample testing.
    <h4>RECORD METHODOLOGY</h4>Official picks are recorded once, at release, with the line and odds available then. A pick must be published at least ${D.meta.release_lead || 60} minutes before kickoff to count. It is graded only after the final score is verified. Pushes are not wins or losses, and canceled games are void. Results are shown in units of $${D.meta.unit}. Owner corrections are logged with a reason rather than deleted.
    <h4>RESPONSIBLE GAMING</h4>You must be 21 or older (or the legal age where you live) and in a jurisdiction where sports betting is legal. Only bet what you can afford to lose. If gambling stops being fun, call or text <b>1-800-GAMBLER</b> or visit ncpgambling.org.
