@@ -410,6 +410,12 @@ body.gated{overflow:hidden}
 .admform{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr auto;gap:8px;align-items:end}.admform input,.admform select{background:#000;color:#fff;border:1px solid var(--edge2);border-radius:8px;padding:8px;font:600 13px var(--mono);width:100%;box-sizing:border-box}
 .admform label{font:800 10px var(--tech);letter-spacing:.1em;color:var(--dim)}
 @media (max-width:900px){.admform{grid-template-columns:1fr 1fr}}
+#side .side-login{display:block;width:100%;margin:2px 0 10px;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#ff2e88,#ff5fb0);color:#fff;
+  font:900 13px var(--tech);letter-spacing:.14em;cursor:pointer;box-shadow:0 0 16px rgba(255,46,136,.6)}
+#side .side-user{margin:2px 0 10px;padding:10px 12px;border-radius:12px;border:1px solid var(--green);background:rgba(57,255,136,.07)}
+#side .side-user .nm{font:900 14px var(--tech);color:#fff;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#side .side-user .em{font:600 10.5px var(--mono);color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#side .side-user button{margin-top:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--edge2);background:var(--panel);color:var(--ink);font:800 10px var(--tech);letter-spacing:.1em;cursor:pointer}
 footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
 @media (max-width:960px){.stats{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}}
 @media (max-width:680px){.hero{grid-template-columns:1fr}.status{min-width:0}.stats{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4{grid-template-columns:1fr}
@@ -673,11 +679,20 @@ function header() {
 /* ---------- navigation ---------- */
 const VIEWS = [["home", "HOME", "⌂"], ["picks", "OFFICIAL PICKS", "★"], ["results", "RESULTS", "✓"], ["props", "PLAYER PROPS", "◎"], ["games", "GAMES", "▦"], ["rankings", "RANKINGS", "#"], ["tool", "WHO WOULD WIN?", "⚔"],
   ["model", "MODEL", "◉"], ["card", "MY CARD", "▤"]];
+function kjUserBox() {
+  if (!(typeof KJ_AUTH !== "undefined" && KJ_AUTH)) return "";
+  const u = window.KJ && KJ.user;
+  if (!u) return '<button class="side-login" data-auth="login">👤 LOG IN / SIGN UP</button>';
+  const name = (KJ.profile && KJ.profile.full_name) || u.email.split("@")[0];
+  const st = KJ.profile ? (KJ.profile.is_admin ? "ADMIN" : String(KJ.profile.status).toUpperCase()) : "";
+  return `<div class="side-user"><div class="tiny" style="color:var(--green);font:800 10px var(--tech);letter-spacing:.14em">● LOGGED IN${st ? " · " + esc(st) : ""}</div>
+    <div class="nm">👤 ${esc(name)}</div><div class="em">${esc(u.email)}</div><button data-logout="1">LOG OUT</button></div>`;
+}
 function sidebar() {
   const h = "#" + decodeURIComponent(location.hash.slice(1) || "home");
   const it = (href, ico, label) => `<a class="it ${h === href || (!["#home", "#nfl", "#ncaa"].includes(href) && h.startsWith(href + "/")) ? "on" : ""}" href="${href}"><i>${ico}</i>${label}</a>`;
   const nflOn = nflMarketsOn().length;
-  $("#side").innerHTML = `<a class="logo" href="#home">KJ’S PICKS</a>
+  $("#side").innerHTML = `<a class="logo" href="#home">KJ’S PICKS</a>${kjUserBox()}
     <div class="grp all">OVERVIEW</div>
     ${it("#home", "⌂", "HOME & ABOUT")}${it("#results", "✓", "OFFICIAL RECORD")}${it("#picks", "★", "ALL OFFICIAL PICKS")}${it("#card", "🎟", "MY CARD")}${it("#live", "●", "GAMEDAY LIVE")}
     ${isAdmin() ? `<div class="grp all" style="border-color:var(--gold);color:var(--gold)">ADMIN</div>${it("#admin", "⚙", "ADMIN PORTAL")}` : ""}
@@ -2077,7 +2092,7 @@ function acctMenu() {
   const el = $("#acct"); if (!el) return;
   if (LOCKED && !(window.KJ && KJ.user)) { el.innerHTML = '<button data-auth="signup" style="background:#1ee3ff;color:#000;border-color:#1ee3ff">CREATE ACCOUNT</button><button data-auth="login">LOG IN</button>'; return; }
   if (!window.KJ || !KJ.user) { el.innerHTML = ""; return; }
-  el.innerHTML = `<span>👤 ${esc(KJ.user.email)}</span>${KJ.profile && KJ.profile.is_admin ? '<a class="adm" href="#admin">ADMIN PORTAL</a>' : ""}<button id="kjlogout">LOG OUT</button>`;
+  el.innerHTML = `<span>👤 Signed in as <b style="color:#fff">${esc((KJ.profile && KJ.profile.full_name) || KJ.user.email.split("@")[0])}</b></span>${KJ.profile && KJ.profile.is_admin ? '<a class="adm" href="#admin">ADMIN PORTAL</a>' : ""}<button id="kjlogout">LOG OUT</button>`;
   $("#kjlogout").onclick = async () => { await KJ.client.auth.signOut(); location.hash = "#home"; location.reload(); };
 }
 const isAdmin = () => !!(window.KJ && KJ.profile && KJ.profile.is_admin);
@@ -2412,6 +2427,7 @@ document.addEventListener("click", e => {
   const au = e.target.closest("[data-auth]");
   if (au) { e.preventDefault(); e.stopPropagation(); if (window.kjOpenAuth) kjOpenAuth(au.dataset.auth); return; }
   if (e.target.closest("#kjrecheck")) { e.preventDefault(); location.reload(); return; }
+  if (e.target.closest("[data-logout]")) { e.preventDefault(); KJ.client.auth.signOut().then(() => { location.hash = "#home"; location.reload(); }); return; }
   const ag = e.target.closest("[data-addgame]"), al = e.target.closest("[data-ladd]"), ab = e.target.closest("[data-add]"), ac = e.target.closest("[data-cadd]");
   if (!ag && !al && !ab && !ac) return;
   e.stopPropagation(); e.preventDefault();
