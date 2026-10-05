@@ -466,7 +466,7 @@ footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
      L0 background environment (#env)     L1 secondary panels (.panel, .stat, boards)
      L2 normal game cards (.gc)           L3 official picks (.gc.official, .lc)
      L4 top model play, alerts, modals    Text always faces the viewer: 3D is around the data, never on it.
-   League lighting: <html data-league="NCAA|NFL|ALL"> swaps --acc / --acc2 (NCAA blue/purple, NFL gold/red).
+   League lighting: <html data-theme-league="NCAA|NFL|ALL"> swaps --acc / --acc2 (NCAA blue/purple, NFL gold/red).
    ===================================================================================================== */
 :root{
   --acc:#ff2e88;--acc2:#1ee3ff;--acc-rgb:255,46,136;--acc2-rgb:30,227,255;
@@ -478,8 +478,8 @@ footer{margin:40px 0 20px;text-align:center;color:var(--dim2);font-size:12px}
   --L4:var(--rim),0 30px 64px rgba(0,0,0,.72),0 0 42px rgba(255,210,63,.45);
   --ease:cubic-bezier(.2,.7,.2,1);
 }
-html[data-league="NCAA"]{--acc:#1ee3ff;--acc2:#b06bff;--acc-rgb:30,227,255;--acc2-rgb:176,107,255}
-html[data-league="NFL"]{--acc:#ffd23f;--acc2:#ff4566;--acc-rgb:255,210,63;--acc2-rgb:255,69,102}
+html[data-theme-league="NCAA"]{--acc:#1ee3ff;--acc2:#b06bff;--acc-rgb:30,227,255;--acc2-rgb:176,107,255}
+html[data-theme-league="NFL"]{--acc:#ffd23f;--acc2:#ff4566;--acc-rgb:255,210,63;--acc2-rgb:255,69,102}
 
 /* ---------- L0: the sportsbook room (fixed, behind everything, pointer-events off) ---------- */
 body{background:#05030b;background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:32px 32px}
@@ -489,7 +489,7 @@ body{background:#05030b;background-image:linear-gradient(rgba(255,255,255,.014) 
 .env-glow.g-all{background:radial-gradient(1000px 520px at 6% -8%,rgba(176,107,255,.24),transparent 60%),radial-gradient(900px 480px at 96% -4%,rgba(255,46,136,.2),transparent 60%),radial-gradient(1200px 640px at 50% 118%,rgba(30,227,255,.13),transparent 62%)}
 .env-glow.g-ncaa{background:radial-gradient(1000px 520px at 6% -8%,rgba(176,107,255,.26),transparent 60%),radial-gradient(900px 480px at 96% -4%,rgba(30,227,255,.22),transparent 60%),radial-gradient(1200px 640px at 50% 118%,rgba(30,120,255,.16),transparent 62%)}
 .env-glow.g-nfl{background:radial-gradient(1000px 520px at 6% -8%,rgba(255,69,102,.2),transparent 60%),radial-gradient(900px 480px at 96% -4%,rgba(255,210,63,.2),transparent 60%),radial-gradient(1200px 640px at 50% 118%,rgba(255,150,40,.12),transparent 62%)}
-html:not([data-league]) .g-all,html[data-league="ALL"] .g-all,html[data-league="NCAA"] .g-ncaa,html[data-league="NFL"] .g-nfl{opacity:1}
+html:not([data-theme-league]) .g-all,html[data-theme-league="ALL"] .g-all,html[data-theme-league="NCAA"] .g-ncaa,html[data-theme-league="NFL"] .g-nfl{opacity:1}
 /* distant odds boards: blurred LED screens high on the back wall */
 .env-boards{transform:translate3d(calc(var(--px) * .55),calc(var(--py) * .55),0)}
 .env-boards i{position:absolute;top:9%;height:110px;border-radius:6px;opacity:.16;filter:blur(1.5px);overflow:hidden;
@@ -532,15 +532,16 @@ html:not([data-league]) .g-all,html[data-league="ALL"] .g-all,html[data-league="
 .brand{position:relative;perspective:900px}
 .brand .wm{display:inline-block;transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s var(--ease)}
 .brand .wm.tilting{transition:transform .08s linear}
-.brand h1{position:relative;isolation:isolate;text-shadow:none;color:#fff;
-  background:linear-gradient(180deg,#ffffff 0%,#ffe6f2 42%,#ff8cc2 54%,#ffffff 56%,#ffd3e8 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 2px rgba(255,255,255,.7)) drop-shadow(0 0 14px rgba(255,46,136,.85)) drop-shadow(0 0 36px rgba(255,46,136,.45))}
+.brand h1{position:relative;isolation:isolate;color:#fff6fb;-webkit-text-fill-color:#fff6fb;
+  text-shadow:0 0 2px #fff,0 0 12px rgba(255,46,136,.9),0 0 30px rgba(255,46,136,.55),0 0 60px rgba(255,46,136,.3)}
 .brand h1:before{content:attr(data-text);position:absolute;left:0;top:0;z-index:-1;background:none;-webkit-text-fill-color:#2c0719;color:#2c0719;
   text-shadow:1px 1px 0 #4a0c2e,2px 2px 0 #420a29,3px 3px 0 #380822,4px 4px 0 #2e061c,5px 6px 10px rgba(0,0,0,.85)}
-.brand h1:after{content:attr(data-text);position:absolute;left:0;top:0;pointer-events:none;-webkit-text-fill-color:transparent;
-  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%) -150% 0/250% 100% no-repeat;-webkit-background-clip:text;background-clip:text;opacity:.0}
+.brand h1:after{content:attr(data-text);position:absolute;left:0;top:0;pointer-events:none;-webkit-text-fill-color:transparent;text-shadow:none;
+  background:linear-gradient(180deg,transparent 48%,rgba(255,120,190,.38) 54%,transparent 58%),linear-gradient(105deg,transparent 40%,rgba(255,255,255,.9) 50%,transparent 60%) -150% 0/250% 100% no-repeat;
+  -webkit-background-clip:text;background-clip:text}
+.brand h1:after{background-size:100% 100%,250% 100%}
 .fx-full .brand h1:after{animation:sheen 9s ease-in-out 1.5s infinite}
-@keyframes sheen{0%{background-position:-150% 0;opacity:.9}35%,100%{background-position:150% 0;opacity:.9}}
+@keyframes sheen{0%{background-position:0 0,-150% 0}35%,100%{background-position:0 0,150% 0}}
 .brand .sub{color:var(--acc2);text-shadow:0 0 10px rgba(var(--acc2-rgb),.6);transition:color .6s}
 .status{background:var(--glass),rgba(4,2,10,.72);border:1px solid rgba(var(--acc-rgb),.35);border-radius:14px;box-shadow:var(--L1),inset 0 0 24px rgba(var(--acc-rgb),.1);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);position:relative;overflow:hidden;transition:border-color .6s}
@@ -774,8 +775,8 @@ h2.sec{text-shadow:0 0 12px rgba(255,210,63,.55),0 2px 0 rgba(0,0,0,.6)}
 <div class="ticker" id="ticker" role="marquee" aria-label="KJ’s Picks ticker"></div>
 <div class="wrap">
   <header class="hero">
-    <div class="brand"><h1>KJ’S PICKS</h1><div class="sub">FOOTBALL MARKET INTELLIGENCE · NCAA + NFL</div></div>
-    <div class="hdr-btns"><a class="mycard-btn" href="#card" id="mcbtn">🎟 MY CARD <span class="n" id="mcCount"></span></a><a class="tamu-btn" href="#tamu">TAMU PLAYS</a><button class="bell" id="bell" title="Alerts">🔔<span class="n" id="belln"></span></button></div>
+    <div class="brand"><div class="wm" data-tilt="2"><h1 data-text="KJ’S PICKS">KJ’S PICKS</h1><div class="sub">FOOTBALL MARKET INTELLIGENCE · NCAA + NFL</div></div></div>
+    <div class="hdr-btns"><button class="menu-btn" id="menubtn" aria-label="Open the site menu">☰</button><a class="mycard-btn" href="#card" id="mcbtn">🎟 MY CARD <span class="n" id="mcCount"></span></a><a class="tamu-btn" href="#tamu">TAMU PLAYS</a><button class="bell" id="bell" title="Alerts">🔔<span class="n" id="belln"></span></button></div>
     <div class="alerts hidden" id="alerts"></div>
     <div class="status" id="status"></div>
     <div id="acct"></div>
@@ -992,11 +993,12 @@ function ticker() {
   Object.values(T).filter(t => t.kal_trend != null && Math.abs(t.kal_trend) >= 2).sort((a, b) => Math.abs(b.kal_trend) - Math.abs(a.kal_trend)).slice(0, 6)
     .forEach(t => add(`<span class="k p">${esc(t.school.toUpperCase())} KALMAN STRENGTH ${t.kal_trend > 0 ? "▲" : "▼"}${Math.abs(t.kal_trend).toFixed(1)}</span>`));
   D.games.forEach(g => {
-    const e = g.model.edge_spread;
+    const e = g.model.edge_spread, op = g.history && g.history.open, ms = g.market.spread;
+    const mv = op != null && ms != null && op !== ms ? `<span class="mv ${ms > op ? "up" : "dn"}" title="moved from ${line(op)} at the open">${ms > op ? "▲" : "▼"} ${line(op)}→${line(ms)}</span>` : "";
     if (g.gameday) add(`<span class="k o">📺 COLLEGE GAMEDAY: ${esc(apTxt(g.away.school) + g.away.school.toUpperCase())} @ ${esc(apTxt(g.home.school) + g.home.school.toUpperCase())}</span>`, "", g.id);
     add(`<span class="k b">NCAA</span><span class="w">${esc(apTxt(g.away.school) + (g.away.abbr || g.away.school))} @ ${esc(apTxt(g.home.school) + (g.home.abbr || g.home.school))}</span><span class="w">${esc(g.home.school)} ${line(g.market.spread)}</span>` +
         `<span class="b">KJ’S PICKS FAIR ${fl(g.model.fair_spread)}</span><span class="${e == null ? "" : Math.abs(e) >= 3 ? "g" : "d"}">EDGE ${sgn(e)}</span>` +
-        `<span class="w">O/U ${num(g.market.total, 1)}</span><span class="d">${esc(fmtTime(g.kickoff))}</span>`, "", g.id);
+        `${mv}<span class="w">O/U ${num(g.market.total, 1)}</span><span class="d">${esc(fmtTime(g.kickoff))}</span>`, "", g.id);
   });
   const html = it.join("");
   $("#ticker").innerHTML = `<div class="tk-l"><span class="dot"></span>LIVE</div><div class="tk-w"><div class="tk-t" style="--dur:${Math.max(60, it.length * 7)}s">${html}<span aria-hidden="true" style="display:inline-flex;height:100%">${html}</span></div></div>`;
@@ -1018,7 +1020,7 @@ function header() {
     [h.spread.roi > 0 ? "g" : "r", spct(h.spread.roi), "Spread backtest ROI"], ["b", m.games_analyzed.toLocaleString(), "Games analyzed"],
     [((OFFD.stats || {}).ALL || {}).units < 0 ? "r" : "g", ((OFFD.stats || {}).ALL || {}).record || "0-0", "Official record"],
     [(((OFFD.stats || {}).ALL || {}).avg_clv ?? 0) >= 0 ? "g" : "r", ((OFFD.stats || {}).ALL || {}).avg_clv != null ? sgn(OFFD.stats.ALL.avg_clv) : "–", "Avg CLV (pts)"]];
-  $("#stats").innerHTML = s.map(([c, v, k]) => `<div class="stat ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  $("#stats").innerHTML = s.map(([c, v, k]) => `<div class="stat ${c}" data-tilt="3"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
 }
 
 /* ---------- navigation ---------- */
@@ -1061,11 +1063,13 @@ function nav() {
   $("#mcCount").textContent = n ? n : ""; $("#mcCount").style.display = n ? "" : "none";
   $("#lgbar").innerHTML = leagueBar();
   bell();
-  document.querySelectorAll("[data-league]").forEach(b => b.onclick = () => { LS.set("league", b.dataset.league); nav(); render(); });
+  document.querySelectorAll("[data-league]").forEach(b => b.onclick = () => { location.hash = leagueHref(b.dataset.league); });
   sidebar();
-  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["nfl", "NFL", "◆"], ["ncaa", "COLLEGE", "◆"], ["card", "MY CARD", "🎟"], ["menu", "MENU", "☰"]]
-    .map(([k, nm, i]) => `<button class="${r === k ? "on" : ""} ${k === "card" ? "mc" : ""} ${k === "picks" || k === "props" ? "gold" : ""}" data-v="${k}"><i>${i}</i>${nm}${k === "card" && n ? `<span class="bn">${n}</span>` : ""}</button>`).join("");
+  const base = route().base, lh = k => base ? (k === "home" ? base : base + "/" + k) : k;
+  $("#bnav").innerHTML = [["home", "HOME", "⌂"], ["picks", "PICKS", "★"], ["games", "GAMES", "▦"], ["card", "MY CARD", "🎟"], ["model", "MODEL", "◉"]]
+    .map(([k, nm, i]) => `<button class="${r === k || (k === "home" && r === "dash") ? "on" : ""} ${k === "card" ? "mc" : ""} ${k === "picks" ? "gold" : ""}" data-v="${k === "card" ? "card" : lh(k)}" aria-label="${nm}"><i aria-hidden="true">${i}</i>${nm}${k === "card" && n ? `<span class="bn">${n}</span>` : ""}</button>`).join("");
   document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { if (b.dataset.v === "menu") return toggleSide(); location.hash = b.dataset.v; });
+  const mb = $("#menubtn"); if (mb) mb.onclick = toggleSide;
 }
 function route() {
   const h = decodeURIComponent(location.hash.slice(1) || "home"); const [v, ...rest] = h.split("/");
@@ -2338,30 +2342,73 @@ function bell() {
 }
 
 /* ================= HOME & ABOUT (informational) ================= */
+function newPickAlerts() {           // a NEW official pick since your last visit slides in from the corner (never blocks the page)
+  if (LOCKED || !window.KJFX) return;
+  const up = OFF.filter(r => offStatus(r) === "UPCOMING"), seen = LS.get("seenOff", null);
+  LS.set("seenOff", [...new Set([...up.map(r => r.pick_id), ...(seen || [])])].slice(0, 400));
+  if (seen === null) return;                                     // first visit: nothing counts as "new"
+  up.filter(r => !seen.includes(r.pick_id)).slice(0, 3).forEach((r, i) => setTimeout(() => KJFX.toast(
+    `<div class="t">★ NEW KJ’S PICKS PLAY · ${esc(r.league)}</div><div class="p">${esc(r.pick.toUpperCase())} <span style="font-size:.6em;color:var(--dim)">${odds(r.odds)}</span></div>
+     <div class="x2">EV ${spct(r.ev)}${r.confidence != null ? " · confidence " + r.confidence : ""} · tap to view</div>`, {onclick: () => { location.hash = "picks"; }}), 900 + i * 700));
+}
+function nextKick() {
+  const now = Date.now(), by = (a, b) => new Date(a.kickoff) - new Date(b.kickoff);
+  const pk = OFF.filter(r => offStatus(r) === "UPCOMING").sort(by)[0];
+  const ng = D.games.filter(g => new Date(g.kickoff) > now).sort(by)[0], nf = NFLG.filter(g => new Date(g.kickoff) > now).sort(by)[0];
+  const box = (k, m, ko, attr) => `<div class="panel" ${attr} tabindex="0"><div><div class="k">${k}</div><div class="m">${m}</div></div><span class="countdown" data-ko="${esc(ko)}"></span></div>`;
+  const out = [];
+  if (pk) out.push(box(`NEXT OFFICIAL PICK · ${esc(pk.league)}`, esc(pk.pick), pk.kickoff, G[String(pk.game_id)] ? `data-g="${esc(pk.game_id)}"` : ""));
+  if (ng) out.push(box("NEXT NCAA KICKOFF", `${esc(ng.away.school)} @ ${esc(ng.home.school)}`, ng.kickoff, `data-g="${ng.id}"`));
+  if (nf) out.push(box("NEXT NFL KICKOFF", `${esc(nf.away.school)} @ ${esc(nf.home.school)}`, nf.kickoff, `data-nfl="${esc(nf.id)}"`));
+  return out.length ? `<div class="nextko">${out.join("")}</div>` : '<div class="empty small">No games on the schedule yet.</div>';
+}
 function infoHome() {
   const S = (OFFD.stats || {}), A = S.ALL || {}, ed = LOCKED ? null : edgeOfDay(), m = D.meta, nflOn = nflMarketsOn();
   const openN = LOCKED ? (A.open || 0) + (A.live || 0) : activeOff().length, nflN = LOCKED ? ((D.nfl || {}).games_count || 0) : NFLG.length;
   const bt = D.model_health && D.model_health.spread ? D.model_health.spread : {};
-  return `<div class="info-hero"><div class="lbl tech" style="color:var(--pink);letter-spacing:.3em;font-size:12px">FOOTBALL MARKET INTELLIGENCE</div>
-    <h2>THE MODEL SETS THE LINE.<br>VEGAS IS THE COMPARISON.</h2>
-    <p><b>KJ’s Picks</b> is a quantitative prediction and information service for <b>college football</b> and the <b>NFL</b>. <b>It is not a sportsbook or bookie and takes no bets</b>. For every game it builds its own fair spread, total and win probability from team efficiency, opponent strength, quarterback and injury status, weather, rest and travel, and hidden-state models (Kalman filters, HMM regimes). It then compares those numbers with lines from many sportsbooks. A bet becomes an <b>Official Play</b> only when the model's edge, confidence and every risk check pass. On most days that means few or no plays, which is intended.</p>
-    <div class="cta">${LOCKED ? `<a class="c2" href="#" data-auth="signup">CREATE ACCOUNT${KJ_AUTH && KJ_AUTH.price ? " · " + esc(KJ_AUTH.price) : ""}</a><a class="c3" href="#" data-auth="login">LOG IN</a>` : '<a class="c2" href="#ncaa">🎓 COLLEGE FOOTBALL</a><a class="c1" href="#nfl">🏈 NFL</a><a class="c3" href="#results">OFFICIAL RECORD</a>'}</div></div>
+  const price = KJ_AUTH && KJ_AUTH.price ? " · " + esc(KJ_AUTH.price) : "";
+  let h = `<div class="intro-strip"><div><h2>THE MODEL SETS THE LINE. VEGAS IS THE COMPARISON.</h2>
+      <p><b>KJ’s Picks</b> builds its own fair line for every college football and NFL game, compares it with the sportsbooks, and releases an <b>Official Play</b> only when the edge, confidence and every risk check pass. Most days that means few or no plays. <b>Not a sportsbook:</b> no bets are taken.</p></div>
+      ${LOCKED ? `<div class="cta"><a class="c2" href="#" data-auth="signup">CREATE ACCOUNT${price}</a><a class="c3" href="#" data-auth="login">LOG IN</a></div>` : ""}</div>
 
-  <h2 class="sec">OFFICIAL RECORD <small>every pick KJ’s Picks has released, graded automatically from final scores</small></h2>${recordPanel()}
+  <h2 class="sec">OFFICIAL RECORD <small>every pick ever released, graded automatically from verified final scores</small></h2>${recordPanel()}
 
-  <h2 class="sec">THE DATA RIGHT NOW</h2>
-  <div class="stats"><div class="stat b"><div class="v">${(m.games_analyzed || 0).toLocaleString()}</div><div class="k">College games in the model</div></div>
-   <div class="stat"><div class="v">${m.games_priced || 0}</div><div class="k">College games priced this week</div></div>
-   <div class="stat"><div class="v">${nflN}</div><div class="k">NFL games priced</div></div>
-   <div class="stat ${clsv(bt.roi)}"><div class="v">${bt.roi == null ? "–" : spct(bt.roi)}</div><div class="k">NCAA spread backtest ROI</div></div>
-   <div class="stat y"><div class="v">${openN}</div><div class="k">Open official picks</div></div>
-   <div class="stat ${nflOn.length ? "g" : "r"}"><div class="v">${nflOn.length ? "ON" : "OFF"}</div><div class="k">NFL official picks</div></div></div>
-  <div class="tiny muted">College model updated ${esc(fmtClock(m.model_run || m.updated))}${m.refreshed ? ` · results updated ${esc(fmtClock(m.refreshed))}` : ""}${D.nfl ? ` · NFL model updated ${esc(fmtClock(D.nfl.updated))}` : ""}.</div>
-
-  <h2 class="sec">★ EDGE OF THE DAY</h2>${LOCKED ? `<div class="info-hero" style="text-align:center;border-color:var(--gold)"><div class="lbl tech" style="color:var(--gold);letter-spacing:.3em">🔒 MEMBERS ONLY</div>
-      <p style="margin:8px auto">${openN ? `<b class="y">${openN} official pick${openN > 1 ? "s are" : " is"} open right now.</b> ` : ""}Members see every official pick before kickoff, with the line, odds, model edge and confidence.</p>
+  <h2 class="sec">★ TOP MODEL PLAY <small>the strongest open official pick right now (EV × probability × confidence)</small></h2>${LOCKED ? `<div class="info-hero" style="text-align:center;border-color:var(--gold)"><div class="lbl tech" style="color:var(--gold);letter-spacing:.3em">🔒 MEMBERS ONLY</div>
+      <p style="margin:8px auto">${openN ? `<b class="y">${openN} official pick${openN > 1 ? "s are" : " is"} open right now.</b> ` : ""}Members see every official pick before kickoff, with the line, odds, model fair line, edge and confidence.</p>
       <div class="cta" style="justify-content:center"><a class="c1" href="#" data-auth="signup">UNLOCK THE PICKS</a><a class="c3" href="#" data-auth="login">LOG IN</a></div></div>`
-      : ed ? `<div class="home-hero">${ledgerCard(ed, true)}</div>` : '<div class="empty">No qualifying official play right now. The model only releases a pick when every check passes.</div>'}
+      : ed ? `<div class="home-hero" data-tilt="2">${ledgerCard(ed, true)}</div>` : '<div class="empty">No qualifying official play right now. The model only releases a pick when every check passes; it is never asked to find one.</div>'}`;
+  if (!LOCKED) {
+    const up = OFF.filter(r => offStatus(r) === "UPCOMING" && r !== ed), lv = OFF.filter(r => offStatus(r) === "LIVE");
+    h += `<h2 class="sec">OFFICIAL PLAYS <small>${up.length} more upcoming · NCAA and NFL · from the permanent ledger</small></h2>` +
+      (up.length ? `<div class="grid auto">${up.map(r => ledgerCard(r)).join("")}</div>` : '<div class="empty small">No other upcoming official plays.</div>');
+    if (lv.length) h += `<h2 class="sec" style="color:var(--green)">● LIVE BETS <small>${lv.length} official pick${lv.length > 1 ? "s" : ""} in progress · graded only after the final is verified · <a href="#live">GAMEDAY LIVE →</a></small></h2><div class="grid auto">${lv.map(r => ledgerCard(r)).join("")}</div>`;
+    h += `<h2 class="sec">NEXT KICKOFF</h2>${nextKick()}`;
+    if (!STALE) {
+      h += `<div class="grid g2" style="margin-top:6px"><div><h2 class="sec">MARKET MOVERS <small>NCAA · open → now</small></h2>${moversBoard()}</div>
+        <div><h2 class="sec">BIGGEST EDGES <small>NCAA · model vs market</small></h2>${disagreeBoard()}</div></div>`;
+      const nxt = D.games.filter(g => new Date(g.kickoff) > Date.now()).slice(0, 6);
+      if (nxt.length) h += `<h2 class="sec" style="color:#1ee3ff">🎓 NCAA BOARD <small>model fair line vs market · <a href="#ncaa/games">all games →</a></small></h2><div class="grid auto">${nxt.map(g => gameCard(g)).join("")}</div>`;
+      if (NFLG.length) h += `<h2 class="sec" style="color:var(--gold)">🏈 NFL BOARD <small>biggest edges first · <a href="#nfl/games">all NFL games →</a></small></h2>${nflBoard(6)}`;
+      h += `<h2 class="sec">POWER RANKINGS <small>KJ’s Picks NCAA top 10 · <a href="#ncaa/rankings">full board →</a></small></h2>${powerMini()}`;
+    }
+  }
+  h += `<h2 class="sec">MODEL PERFORMANCE</h2>
+  <div class="stats"><div class="stat b" data-tilt="3"><div class="v">${(m.games_analyzed || 0).toLocaleString()}</div><div class="k">College games in the model</div></div>
+   <div class="stat" data-tilt="3"><div class="v">${m.games_priced || 0}</div><div class="k">College games priced this week</div></div>
+   <div class="stat" data-tilt="3"><div class="v">${nflN}</div><div class="k">NFL games priced</div></div>
+   <div class="stat ${clsv(bt.roi)}" data-tilt="3"><div class="v">${bt.roi == null ? "–" : spct(bt.roi)}</div><div class="k">NCAA spread backtest ROI</div></div>
+   <div class="stat y" data-tilt="3"><div class="v">${openN}</div><div class="k">Open official picks</div></div>
+   <div class="stat ${nflOn.length ? "g" : "r"}" data-tilt="3"><div class="v">${nflOn.length ? "ON" : "OFF"}</div><div class="k">NFL official picks</div></div></div>
+  <div class="tiny muted">College model updated ${esc(fmtClock(m.model_run || m.updated))}${m.refreshed ? ` · results updated ${esc(fmtClock(m.refreshed))}` : ""}${D.nfl ? ` · NFL model updated ${esc(fmtClock(D.nfl.updated))}` : ""}.</div>
+  ${!LOCKED && D.model_health ? `<div class="grid g2" style="margin-top:10px">${healthPanel()}${dataPanel()}</div>` : ""}
+
+  <h2 class="sec">MODEL LAB <small>how the model is built and how it's doing</small></h2>
+  <div class="feat3"><a href="#picks"><b>★ OFFICIAL PICKS</b>Every released pick with its line, odds, model edge and live status. Nothing is ever removed.</a>
+   <a href="#results"><b>✓ RESULTS</b>Season record, units, ROI and CLV, plus what the model knew when each pick was released.</a>
+   <a href="#live"><b>● GAMEDAY LIVE</b>Live scores, live lines and the live model, with each official bet tracked as it happens.</a>
+   <a href="#ncaa/model"><b>◉ NCAA MODEL LAB</b>Backtests, calibration, feature tests and model versions.</a>
+   <a href="#quant"><b>◈ QUANT ENGINE</b>Simulation, Sharpe, CAPM and the portfolio engine (shadow mode until proven).</a>
+   <a href="#card"><b>🎟 MY CARD</b>Track any bet or game and follow it live. Saved only in your browser.</a></div>
 
   ${alertsLive() ? `<h2 class="sec" style="color:var(--blue);text-shadow:var(--b-glow)">📱 TEXT ALERTS <small>official model plays only</small></h2><div id="homealerts">${alertSignupHTML()}</div>` : ""}
 
@@ -2400,6 +2447,7 @@ function infoHome() {
    <h4>DATA SOURCES AND AFFILIATION</h4>Data comes from CollegeFootballData.com, The Odds API, nflverse, ESPN public feeds, Open-Meteo and conference availability reports. KJ’s Picks is not affiliated with or endorsed by the NCAA, the NFL, ESPN, the AP or any sportsbook. Team names and logos belong to their owners and are used for identification only.
    <h4>PRIVACY</h4>My Card selections and site settings are stored only in your own browser. If you sign up for text alerts, your phone number is used only to send the alerts you choose. It is never shown on the site (only its last 4 digits, to you), never sold or shared, and you can remove it anytime in MY ALERTS or by replying STOP.
   </div>`;
+  return h;
 }
 function nflDash() {
   const S = (OFFD.stats || {}).NFL || {}, on = nflMarketsOn();
@@ -2692,7 +2740,7 @@ function recordPanel() {
   const prev = LS.get("lastRecord", {}), cur = {};
   const box = lg => { const S = (OFFD.stats || {})[lg] || {}; cur[lg] = S.record + "|" + S.units;
     const changed = prev[lg] && prev[lg] !== cur[lg];
-    return `<div class="recbox ${lg} ${changed ? "flash" : ""}"><div style="display:flex;justify-content:space-between;align-items:center">${lg === "ALL" ? '<span class="lg" style="background:#fff;color:#000">ALL FOOTBALL</span>' : lgBadge(lg)}<span class="tiny muted">${S.released || 0} released</span></div>
+    return `<div class="recbox ${lg} ${changed ? "flash" : ""}" data-tilt="2"><div style="display:flex;justify-content:space-between;align-items:center">${lg === "ALL" ? '<span class="lg" style="background:#fff;color:#000">ALL FOOTBALL</span>' : lgBadge(lg)}<span class="tiny muted">${S.released || 0} released</span></div>
       <div class="big">${S.released ? esc(S.record) : "0-0"}</div>
       <div class="row3"><div><div class="k">UNITS</div><div class="v ${clsv(S.units)}">${fmtU(S.units || 0)}</div></div><div><div class="k">ROI</div><div class="v ${clsv(S.roi)}">${S.roi == null ? "–" : spct(S.roi)}</div></div><div><div class="k">WIN %</div><div class="v">${S.win_rate == null ? "–" : pct(S.win_rate, 0)}</div></div>
        <div><div class="k">OPEN</div><div class="v y">${S.open || 0}</div></div><div><div class="k">LIVE</div><div class="v g">${S.live || 0}</div></div><div><div class="k">PROFIT</div><div class="v ${clsv(S.profit_usd)}">$${num(S.profit_usd || 0, 2)}</div></div></div>
@@ -2703,9 +2751,15 @@ function recordPanel() {
   LS.set("lastRecord", cur);
   return h;
 }
+function leagueHref(L) {          // NCAA | NFL | ALL keeps the current page when it exists for both leagues
+  const r = route(), both = ["picks", "games", "results", "live", "model"];
+  const sub = both.includes(r.v) ? r.v : "";
+  if (L === "ALL") return sub || "home";
+  return L.toLowerCase() + (sub ? "/" + sub : "");
+}
 function leagueBar() {
   const L = LEAGUE();
-  return [["NCAA", "ncaa"], ["NFL", "nfl"], ["ALL", "all"]].map(([k, c]) => `<button class="${c} ${L === k ? "on" : ""}" data-league="${k}">${k === "ALL" ? '<span class="lfull">ALL FOOTBALL</span><span class="lshort">ALL</span>' : k}</button>`).join("");
+  return [["NCAA", "ncaa"], ["NFL", "nfl"], ["ALL", "all"]].map(([k, c]) => `<button class="${c} ${L === k ? "on" : ""}" data-league="${k}" aria-pressed="${L === k}">${k === "ALL" ? '<span class="lfull">ALL FOOTBALL</span><span class="lshort">ALL</span>' : k}</button>`).join("");
 }
 const activeOff = () => OFF.filter(r => inLeague(r) && ["UPCOMING", "LIVE"].includes(offStatus(r)));
 function edgeOfDay() {        // highest-quality qualifying official play: EV x probability x confidence (confidence already
@@ -3133,7 +3187,7 @@ async function adminAlertsLoad() {
 
 /* ---------- render ---------- */
 function render() {
-  const r = route(); nav(); const app = $("#app");
+  const r = route(); document.documentElement.dataset.themeLeague = r.lg || "ALL"; nav(); const app = $("#app");
   const gamesV = () => LEAGUE() === "NFL" ? `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>` + nflBoard() : LEAGUE() === "NCAA" ? games() : `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>${nflBoard()}<h2 class="sec">NCAA GAMES</h2>` + games();
   const views = {alerts: alertsView, admin: adminView, optimal: optimalView, quant: quantView, home: infoHome, tamu: tamuView, live: liveView, picks, results: resultsView, props: propsView, games: gamesV, rankings, tool, card,
     model: () => r.lg === "NFL" ? nflHealthView() : modelView(r.arg), team: () => team(r.arg), dash: () => r.lg === "NFL" ? nflDash() : home()};
@@ -3160,7 +3214,7 @@ setInterval(() => document.querySelectorAll("[data-ko]").forEach(el => { const s
   el.textContent = s <= 0 ? "LIVE / FINAL" : `${Math.floor(s / 3600)}h ${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}m ${String(Math.floor(s % 60)).padStart(2, "0")}s`; }), 1000);
 window.addEventListener("hashchange", () => { closeModal(); render(); window.scrollTo(0, 0); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-ticker(); header(); acctMenu(); render();
+ticker(); header(); acctMenu(); render(); newPickAlerts();
 })();
 </script>
 </body>
