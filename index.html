@@ -2577,7 +2577,7 @@ function render() {
   app.innerHTML = LOCKED && r.v !== "home" ? lockedView() : staleBanner() + (views[r.v] || infoHome)();
   window.scrollTo(0, 0);
   wire(app);
-  if (r.v === "games") wireBoard();
+  if (r.v === "games" && $("#board")) wireBoard();
   app.querySelectorAll("[data-cardf]").forEach(b => b.onclick = () => { LS.set("cardf", b.dataset.cardf); render(); });
   app.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => { LS.set("pickf", {...LS.get("pickf", {tab: "ACTIVE", type: "ALL"}), tab: b.dataset.ptab}); render(); });
   app.querySelectorAll("[data-ptype]").forEach(b => b.onclick = () => { LS.set("pickf", {...LS.get("pickf", {tab: "ACTIVE", type: "ALL"}), type: b.dataset.ptype}); render(); });
