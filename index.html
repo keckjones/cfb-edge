@@ -917,6 +917,34 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
 .unit-chips button{padding:7px 12px;border-radius:999px;border:1px solid rgba(var(--ag-rgb),.45);background:rgba(var(--ag-rgb),.07);color:#e9fff1;font:800 12.5px var(--mono);cursor:pointer}
 .unit-ex{min-height:20px;font:600 13px/1.5 Inter;color:#cfc6e6}.unit-ex b{color:#fff}
 
+/* ---------- suggestion cards in the chat ---------- */
+.agc-list{display:grid;gap:8px;margin-top:8px}
+.agc{padding:10px 12px;border-radius:12px;background:#07040f;border:1px solid rgba(255,159,46,.55);box-shadow:0 6px 16px rgba(0,0,0,.45)}
+.agc.official{border-color:var(--gold);box-shadow:0 0 16px rgba(255,210,63,.25)}
+.agc.parlay{border-color:rgba(255,46,136,.6)}
+.agc-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.agc-top .tiny{margin-left:auto}
+.agc-pick{font:400 24px/1.05 var(--disp);letter-spacing:.04em;color:#fff;margin-top:6px}
+.agc-why{margin:6px 0;font:500 13px/1.45 Inter;color:#e6e0f5}.agc-why b{color:var(--ag);font:900 10px var(--tech);letter-spacing:.12em}
+.agc-warn{margin:6px 0;padding:7px 9px;border-radius:9px;border:1px solid var(--orange);background:rgba(255,159,46,.08);color:#ffd6a8;font:600 12px/1.45 Inter}
+.agc-warn b{color:var(--orange)}.agc-warn ul{margin:4px 0 0;padding-left:16px}
+.agc-stats{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.agc-stats span{display:flex;flex-direction:column;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.04);font:800 8.5px var(--tech);letter-spacing:.1em;color:var(--dim)}
+.agc-stats b{font:800 14px var(--mono);color:#fff;letter-spacing:0}.agc-stats b.g{color:var(--green)}.agc-stats b.r{color:var(--red)}
+.agc-legs{display:grid;gap:4px;margin:6px 0;font-size:13px}
+.agc-det summary{cursor:pointer;font:800 10.5px var(--tech);letter-spacing:.12em;color:var(--blue);margin:4px 0}
+.agc-leg{padding:5px 0;border-bottom:1px dashed var(--edge);font-size:12.5px}
+.agc-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+/* ---------- lobby ideas + reset bar ---------- */
+.ag-ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.ag-ideas.compact{margin:6px 0 4px;max-height:260px;overflow-y:auto}
+.ag-idea-g{display:flex;flex-direction:column;gap:5px}
+.ag-idea-h{font:900 10px var(--tech);letter-spacing:.16em;color:var(--ag)}
+.ag-ideas button{text-align:left;padding:7px 10px;border-radius:10px;border:1px solid rgba(var(--ag-rgb),.3);background:rgba(var(--ag-rgb),.05);color:#e9fff1;font:600 12.5px Inter;cursor:pointer}
+.ag-ideas button:hover{background:rgba(var(--ag-rgb),.14)}
+.ag-sugg .ideas{border-color:var(--gold);color:var(--gold);background:rgba(255,210,63,.08)}
+.ag-resetbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,210,63,.5);background:rgba(255,210,63,.07);font:600 13px Inter}
+.ag-resetbar.base{border-color:rgba(var(--ag-rgb),.4);background:rgba(var(--ag-rgb),.05)}
+
 /* KJ's Picks legal notices: per-page entertainment-only bar, first-visit 21+ gate, Terms / Privacy pages */
 .ent-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0 2px;padding:7px 12px;border-radius:10px;
   border:1px solid rgba(57,255,136,.35);background:rgba(57,255,136,.05);font:600 11.5px Inter;color:#cfe9da}
@@ -3714,7 +3742,7 @@ async function agLoad() {
   if (agCloud()) {
     const c = KJ.client, uid = KJ.user.id;
     const [p, m, k] = await Promise.all([c.from("agent_profiles").select("*").eq("user_id", uid).maybeSingle(),
-      c.from("agent_messages").select("role,content,created_at").eq("user_id", uid).order("created_at", {ascending: false}).limit(40),
+      c.from("agent_messages").select("role,content,cards,created_at").eq("user_id", uid).order("created_at", {ascending: false}).limit(40),
       c.from("agent_picks").select("*").eq("user_id", uid).order("created_at", {ascending: false}).limit(300)]);
     if (p.error || m.error || k.error) {                       // server side not set up yet: keep everything working in this browser
       AG.cloudOff = true; AG.err = "Agent chat is switching on soon. Your model and picks below already work (saved in this browser).";
@@ -3733,9 +3761,10 @@ async function agSaveProfile() {
     if (error) throw new Error("couldn't save your model"); }
   else LS.set("agent.profile", AG.profile);
 }
-async function agAddMsg(role, content) {
-  AG.msgs.push({role, content, created_at: new Date().toISOString()});
-  if (agCloud()) await KJ.client.from("agent_messages").insert({user_id: KJ.user.id, role, content: content.slice(0, 20000)});
+async function agAddMsg(role, content, cards) {
+  cards = cards && cards.length ? cards : null;
+  AG.msgs.push({role, content, cards, created_at: new Date().toISOString()});
+  if (agCloud()) await KJ.client.from("agent_messages").insert({user_id: KJ.user.id, role, content: content.slice(0, 20000), cards});
   else LS.set("agent.msgs", AG.msgs.slice(-60));
 }
 async function agAddPick(row) {
@@ -3860,6 +3889,7 @@ const AGT = {
     const saved = await agAddPick(row); return {saved: true, id: saved.id, label: saved.label, units: saved.units, odds: saved.odds};
   },
   get_my_record: () => agRecord(),
+  show_picks: x => agShow(x || {}),
   remember_preference: async ({note}) => { const n = String(note || "").trim().slice(0, 300); if (!n) return {error: "empty note"};
     AG.profile.notes = (AG.profile.notes ? AG.profile.notes + "\n" : "") + "- " + n; AG.profile.notes = AG.profile.notes.split("\n").slice(-25).join("\n"); await agSaveProfile(); return {remembered: n}; },
 };
@@ -3879,7 +3909,7 @@ function agContext() {
   return `[Member's personal model settings: ${diff.length ? diff.join("; ") : "KJ's Picks defaults (no changes)"}]\n[Unit size: 1 unit = $${UNIT()}${unitSet() ? "" : " (site default; the member hasn't set one)"}]\n[Saved preferences:\n${AG.profile.notes || "none yet"}]\n[Now: ${new Date().toString()}]`;
 }
 async function agAsk(text) {
-  if (AG.busy || !text.trim()) return; AG.busy = true;
+  if (AG.busy || !text.trim()) return; AG.busy = true; AG_CARDS.length = 0;
   const q = text.trim().slice(0, 2000);
   await agAddMsg("user", q); agDrawChat(); agStatus("Thinking…");
   const hist = AG.msgs.slice(0, -1).slice(-12).map(m => ({role: m.role, content: m.content}));
@@ -3908,13 +3938,119 @@ async function agAsk(text) {
       break;
     }
     if (!final) final = "That took too many steps. Try a narrower question.";
-    await agAddMsg("assistant", final);
+    await agAddMsg("assistant", final, AG_CARDS.splice(0));
   } catch (e) { AG.msgs.push({role: "assistant", content: "⚠ " + e.message, local: true}); }
   AG.busy = false; agStatus(""); agDrawChat(); agDrawSide();
 }
 const AG_TOOL_LABEL = {get_slate: "Scanning the board", get_game: "Pulling the matchup", get_official_picks: "Checking official picks", get_personal_picks: "Running your model",
   build_parlay: "Pricing the parlay", get_member_model: "Reading your settings", list_formula_variables: "Checking formula variables", update_member_model: "Updating your model",
-  save_pick: "Tracking the pick", get_my_record: "Checking your record", remember_preference: "Saving your preference"};
+  save_pick: "Tracking the pick", get_my_record: "Checking your record", remember_preference: "Saving your preference", show_picks: "Preparing your pick cards"};
+
+/* ---------- suggestion cards: built from REAL data, never from the AI's text ---------- */
+function agFailed(b) {                         // the official checks this bet did not pass (plain words)
+  const f = (b.checks || []).filter(c => c.required && !c.ok).map(c => `${c.name}${c.value ? ` (${c.value}${c.need ? `, needs ${c.need}` : ""})` : ""}`);
+  return f.length ? f : (b.why_not || []).slice(0, 4);
+}
+function agSnap(g, lg, b) {
+  return {game_id: String(g.id), lg, label: b.label, matchup: `${g.away.school} @ ${g.home.school}`, kickoff: g.kickoff, market: b.market, odds: b.price, book: b.book,
+    model_p: b.p, ev: b.ev, conf: b.conf ?? null, my_p: b.my_p, my_ev: b.my_ev, official: b.status === "official", fails: b.status === "official" ? [] : agFailed(b).slice(0, 4)};
+}
+function agCardEntry(g, lg, b, units) {        // the same entry My Card builds, so the pick tracks live like any other
+  if (lg === "NFL") { const e = nflBetEntry(g, b); return {...e, units, stake: units * UNIT(), added: new Date().toISOString(), odds: b.price}; }
+  const gid = String(g.id);
+  return {gid, label: b.label, units, price: b.price, point: b.point, added: new Date().toISOString(), stake: units * UNIT(), ev: b.ev ?? null, conf: b.conf ?? null,
+    edge: b.edge_pts ?? null, game: `${g.away.school} @ ${g.home.school}`, official: b.status === "official", odds: b.price, ...cardMeta(gid, b.label, b)};
+}
+function agOnCard(e) { return LS.get("card", []).some(c => c.gid === e.gid && c.label === e.label); }
+function agAddToCard(gid, label) {
+  const f = agFind(gid); if (!f) return false; const b = agGame(f.g, f.lg).bets.find(x => x.label === label); if (!b) return false;
+  const e = agCardEntry(f.g, f.lg, b, agModel().unit_size || 1); const c = LS.get("card", []);
+  if (!agOnCard(e)) { c.push(e); LS.set("card", c); nav(); }
+  return true;
+}
+function agAddParlayToCard(card) {
+  const legs = card.legs.map(l => { const f = agFind(l.game_id); const b = f && agGame(f.g, f.lg).bets.find(x => x.label === l.label); return b ? agCardEntry(f.g, f.lg, b, 1) : null; });
+  if (legs.some(x => !x)) return false;
+  const P = LS.get("parlays", []), key = legs.map(l => l.gid + l.label).join("|");
+  if (!P.some(p => p.legs.map(l => l.gid + l.label).join("|") === key)) { P.push({stake: (card.stake_units || 1) * UNIT(), created: new Date().toISOString(), legs: legs.map(l => ({...l, odds: l.price}))}); LS.set("parlays", P); nav(); }
+  return true;
+}
+const AG_CARDS = [];                            // cards shown during the current answer
+function agShow({picks = [], parlays = []} = {}) {
+  const out = {shown: [], not_found: []};
+  picks.slice(0, 6).forEach(p => { const f = agFind(p.game_id); const b = f && agGame(f.g, f.lg).bets.find(x => x.label === p.label);
+    if (!b) { out.not_found.push(p.label); return; }
+    AG_CARDS.push({kind: "single", reason: String(p.reason || "").slice(0, 400), at: new Date().toISOString(), ...agSnap(f.g, f.lg, b)});
+    out.shown.push({label: b.label, official: b.status === "official", failed_official_checks: b.status === "official" ? [] : agFailed(b).slice(0, 4)}); });
+  parlays.slice(0, 3).forEach(p => { const r = AGT.build_parlay({legs: p.legs || [], stake_units: p.stake_units || 1});
+    if (r.error) { out.not_found.push(r.error); return; }
+    const legs = r.legs.map(l => { const f = agFind(l.game_id), b = agGame(f.g, f.lg).bets.find(x => x.label === l.label); return agSnap(f.g, f.lg, b); });
+    AG_CARDS.push({kind: "parlay", reason: String(p.reason || "").slice(0, 400), at: new Date().toISOString(), legs, combined_odds: r.combined_odds, my_p: r.my_win_prob, my_ev: r.my_ev,
+      stake_units: r.stake_units, warnings: r.warnings});
+    out.shown.push({parlay: legs.map(l => l.label).join(" + "), official: false, note: "Parlays are never official KJ's Picks plays."}); });
+  out.reminder = "Cards are on screen with live numbers. In your text, give the reason for each and say plainly which ones are NOT official picks (they did not pass every model check, so they may not be good bets).";
+  return out;
+}
+function agCardHTML(c, mi, ci) {
+  const id = `${mi}-${ci}`;
+  const warn = (txt, fails) => `<div class="agc-warn">⚠ <b>NOT AN OFFICIAL PICK.</b> ${txt}${fails && fails.length ? `<ul>${fails.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}</div>`;
+  if (c.kind === "parlay") {
+    const on = LS.get("parlays", []).some(p => p.legs.map(l => l.label).join("|") === c.legs.map(l => l.label).join("|"));
+    return `<div class="agc parlay" data-agc="${id}"><div class="agc-top"><span class="chip">🧩 ${c.legs.length}-LEG PARLAY</span><span class="mono">${odds(c.combined_odds)}</span></div>
+     ${c.reason ? `<div class="agc-why"><b>WHY:</b> ${esc(c.reason)}</div>` : ""}
+     ${warn("Parlays are never official KJ’s Picks plays. Each leg's edge is multiplied against the sportsbook's margin, so this may not be a good bet.", [])}
+     <div class="agc-legs">${c.legs.map(l => `<div>${lgBadge(l.lg)} <b>${esc(l.label)}</b> <span class="muted">${odds(l.odds)}</span> ${l.official ? '<span class="chip official">★ OFFICIAL</span>' : '<span class="chip warn">NOT OFFICIAL</span>'}</div>`).join("")}</div>
+     <div class="agc-stats"><span>YOUR WIN %<b>${pct(c.my_p)}</b></span><span>YOUR EV<b class="${clsv(c.my_ev)}">${spct(c.my_ev)}</b></span><span>TO WIN<b>$${num((c.stake_units || 1) * UNIT() * (dec(c.combined_odds) - 1), 2)}</b></span></div>
+     ${(c.warnings || []).length ? `<div class="tiny" style="color:var(--orange)">${c.warnings.map(esc).join(" · ")}</div>` : ""}
+     <details class="agc-det"><summary>DETAILS</summary><div>${c.legs.map(l => `<div class="agc-leg"><b>${esc(l.label)}</b> · ${esc(l.matchup)} · ${esc(fmtTime(l.kickoff))}<br>model ${pct(l.model_p)} · EV ${spct(l.ev)} · conf ${l.conf ?? "–"}${l.fails.length ? `<div class="tiny" style="color:var(--orange)">Failed: ${l.fails.map(esc).join("; ")}</div>` : ""}</div>`).join("")}</div></details>
+     <div class="agc-act"><button class="btn green" data-agpcard="${id}">${on ? "✓ ON MY CARD" : "+ ADD PARLAY TO MY CARD"}</button><button class="btn ghost" data-agptrack="${id}">TRACK</button></div></div>`;
+  }
+  const f = agFind(c.game_id), b = f && agGame(f.g, f.lg).bets.find(x => x.label === c.label), live = b ? agSnap(f.g, f.lg, b) : null, s = live || c;
+  const e = f && b ? agCardEntry(f.g, f.lg, b, 1) : null, on = e && agOnCard(e), started = new Date(c.kickoff) <= Date.now();
+  return `<div class="agc ${s.official ? "official" : ""}" data-agc="${id}"><div class="agc-top">${lgBadge(c.lg)}${s.official ? '<span class="chip official">★ OFFICIAL KJ’S PICKS PLAY</span>' : '<span class="chip warn">PERSONAL / NOT OFFICIAL</span>'}<span class="tiny muted">${esc(fmtTime(c.kickoff))}</span></div>
+   <div class="agc-pick">${esc(c.label)} <span class="muted">${odds(s.odds)}</span></div><div class="tiny muted">${esc(c.matchup)}${s.book ? " · best price at " + esc(s.book) : ""}</div>
+   ${c.reason ? `<div class="agc-why"><b>WHY:</b> ${esc(c.reason)}</div>` : ""}
+   ${s.official ? "" : warn("It did not pass every KJ’s Picks check, so it may not be a good bet:", s.fails)}
+   <div class="agc-stats"><span>MODEL WIN %<b>${pct(s.model_p)}</b></span><span>EV<b class="${clsv(s.ev)}">${spct(s.ev)}</b></span><span>CONFIDENCE<b style="color:${confColor(s.conf)}">${s.conf ?? "–"}</b></span>
+    ${s.my_p != null && Math.abs((s.my_p || 0) - (s.model_p || 0)) > .0005 ? `<span>YOUR WIN %<b>${pct(s.my_p)}</b></span><span>YOUR EV<b class="${clsv(s.my_ev)}">${spct(s.my_ev)}</b></span>` : ""}</div>
+   ${!b ? '<div class="tiny" style="color:var(--orange)">This line is no longer on the board; numbers shown are from when it was suggested.</div>' : ""}
+   <details class="agc-det"><summary>DETAILS</summary><div>${b ? qualHTML(b.checks, true) : ""}<button class="btn ghost" data-agopen="${esc(c.game_id)}" style="margin-top:6px">OPEN FULL MATCHUP</button></div></details>
+   <div class="agc-act">${b && !started ? `<button class="btn green" data-agccard="${id}">${on ? "✓ ON MY CARD" : "+ ADD TO MY CARD"}</button><button class="btn ghost" data-agctrack="${id}">TRACK</button>` : '<span class="tiny muted">Game started; can no longer be added.</span>'}</div></div>`;
+}
+function agWireCards(root) {
+  const card = id => { const [mi, ci] = id.split("-").map(Number); return ((AG.msgs[mi] || {}).cards || [])[ci]; };
+  root.querySelectorAll("[data-agccard]").forEach(b => b.onclick = () => { const c = card(b.dataset.agccard); if (c && agAddToCard(c.game_id, c.label)) b.textContent = "✓ ON MY CARD"; });
+  root.querySelectorAll("[data-agctrack]").forEach(b => b.onclick = async () => { const c = card(b.dataset.agctrack); if (!c) return;
+    try { await AGT.save_pick({game_id: c.game_id, label: c.label}); b.textContent = "✓ TRACKED"; b.disabled = true; agDrawSide(); } catch (e) { b.textContent = e.message.slice(0, 32); } });
+  root.querySelectorAll("[data-agpcard]").forEach(b => b.onclick = () => { const c = card(b.dataset.agpcard); if (c && agAddParlayToCard(c)) b.textContent = "✓ ON MY CARD"; });
+  root.querySelectorAll("[data-agptrack]").forEach(b => b.onclick = async () => { const c = card(b.dataset.agptrack); if (!c) return;
+    try { await AGT.save_pick({legs: c.legs.map(l => ({game_id: l.game_id, label: l.label})), units: c.stake_units}); b.textContent = "✓ TRACKED"; b.disabled = true; agDrawSide(); } catch (e) { b.textContent = e.message.slice(0, 32); } });
+  root.querySelectorAll("[data-agopen]").forEach(b => b.onclick = () => { const f = agFind(b.dataset.agopen); if (!f) return; f.lg === "NFL" ? openNfl(f.g.id) : openGame(f.g.id); });
+}
+
+/* ---------- the lobby: what to say ---------- */
+const AG_IDEAS = [["🎯 PICKS", ["What are the best bets on the board right now?", "Is there an official play today?", "Best NFL bet this week?", "Find me the best underdog this week"]],
+  ["🧩 PARLAYS", ["Build me a 2-leg parlay from my best picks", "Build a 3-leg parlay that pays at least +400", "Is a same-game parlay a good idea?"]],
+  ["🔍 GAMES", ["Which game has the biggest model edge this week?", "Break down the biggest game on the board", "Which totals look too high?"]],
+  ["🧮 MY MODEL", ["Blend my model 25% toward the market", "Make my model more cautious", "Only show me unders", "Give the home team 1 extra point", "Reset my model to the base model"]],
+  ["📈 MY RECORD", ["How is my agent record doing?", "Which bet types are working for me?"]],
+  ["📚 LEARN", ["Why isn't there an official pick today?", "What does EV mean?", "What's a unit and how big should mine be?"]]];
+function agIdeasHTML(compact) {
+  return `<div class="ag-ideas ${compact ? "compact" : ""}">${AG_IDEAS.map(([h, qs]) => `<div class="ag-idea-g"><div class="ag-idea-h">${h}</div>${qs.map(q => `<button data-agq="${esc(q)}">${esc(q)}</button>`).join("")}</div>`).join("")}</div>`;
+}
+function agDiffCount() {
+  const M = agModel(); let n = 0;
+  Object.keys(AG_DEFAULT).forEach(k => { if (k === "team_adj") n += Object.keys(M.team_adj || {}).length; else if (k === "formulas") n += (M.formulas || []).length;
+    else if (JSON.stringify(M[k]) !== JSON.stringify(AG_DEFAULT[k])) n++; });
+  return n;
+}
+function agResetBar() {
+  const n = agDiffCount(), el = $("#agReset2"); if (!el) return;
+  el.innerHTML = n ? `<div class="ag-resetbar"><span>🧮 Your agent is customized: <b>${n} change${n === 1 ? "" : "s"}</b> from the base KJ’s Picks model.</span><button class="btn gold" id="agResetBase">RESET TO BASE MODEL</button></div>`
+    : `<div class="ag-resetbar base"><span>✓ Your agent is using the <b>base KJ’s Picks model</b>. Customize it in MY MODEL or just ask.</span></div>`;
+  const b = $("#agResetBase"); if (b) b.onclick = async () => { if (!confirm("Reset your agent to the base KJ’s Picks model? Your formulas, team adjustments and settings go back to the defaults. You can undo this from the change log.")) return;
+    await agChange({reset: true}, "Reset to the base KJ's Picks model"); agDrawSide(); };
+}
 
 /* ---------- rendering ---------- */
 function agMd(t) {                    // tiny safe markdown: escape first, then **bold**, _italic_, bullet lists
@@ -3930,9 +4066,11 @@ const AG_SUGGEST = ["What are the best bets on the board right now?", "Best NFL 
   "Blend my model 25% toward the market", "Make my model more cautious", "Only show me unders", "Add a formula: 1.5 points for home teams that are trending up"];
 function agDrawChat() {
   const el = $("#agMsgs"); if (!el) return;
-  el.innerHTML = AG.msgs.length ? AG.msgs.map(m => `<div class="ag-m ${m.role}"><div class="who">${m.role === "user" ? "YOU" : "🤖 AGENT"}</div><div class="txt">${m.role === "user" ? `<p>${esc(m.content)}</p>` : agMd(m.content)}</div></div>`).join("")
-    : `<div class="ag-hello"><b>👋 I'm your KJ’s Picks Agent.</b><p>I read the same model behind the official plays, then apply <b>your</b> settings on top. Ask me for the best bets, price a parlay, or tell me how you see a game and I'll tune your model.</p></div>`;
+  el.innerHTML = AG.msgs.length ? AG.msgs.map((m, i) => `<div class="ag-m ${m.role}"><div class="who">${m.role === "user" ? "YOU" : "🤖 AGENT"}</div><div class="txt">${m.role === "user" ? `<p>${esc(m.content)}</p>` : agMd(m.content)}</div>
+      ${(m.cards || []).length ? `<div class="agc-list">${m.cards.map((c, ci) => agCardHTML(c, i, ci)).join("")}</div>` : ""}</div>`).join("")
+    : `<div class="ag-hello"><b>👋 I'm your KJ’s Picks Agent.</b><p>I see every official play and every number from the base KJ’s Picks model, then apply <b>your</b> settings on top. Every bet I suggest shows up as a card with the reason, the live numbers and a clear flag when it is <b>not</b> an official pick. Tap anything below to start.</p>${agIdeasHTML(false)}</div>`;
   el.scrollTop = el.scrollHeight;
+  agWireCards(el); agWireQ(el);
   const u = $("#agUsage"); if (u) u.textContent = AG.usage ? `${AG.usage.used}/${AG.usage.limit} questions today` : "";
 }
 function agPickRow(x, i) {
@@ -3955,6 +4093,7 @@ function agDrawSide() {
   const mm = $("#agModel"); if (mm) mm.innerHTML = agModelForm(M);
   const ch = $("#agChanges"); if (ch) ch.innerHTML = (AG.profile.changes || []).length ? (AG.profile.changes || []).slice(0, 6).map((c, i) => `<div class="ag-ch"><span class="tiny muted">${esc(new Date(c.at).toLocaleString([], {month: "short", day: "numeric", hour: "numeric", minute: "2-digit"}))}</span>
       <span><b>${esc(c.reason)}</b><div class="tiny">${esc((c.done || []).join(" · "))}</div></span><button class="btn ghost" data-agundo="${i}" style="padding:3px 9px">UNDO</button></div>`).join("") : '<div class="tiny muted">No changes yet. Your model starts as the KJ’s Picks model.</div>';
+  agResetBar();
   const nt = $("#agNotes"); if (nt) nt.innerHTML = AG.profile.notes ? agMd(AG.profile.notes) : '<div class="tiny muted">Tell the agent how you like to bet and it will remember.</div>';
   agWireSide();
 }
@@ -3979,7 +4118,7 @@ function agModelForm(M) {
     <input id="agFxExpr" placeholder="e.g. 0.5 * kal_diff - 1" style="flex:1"><button class="btn" id="agFxAdd">ADD</button></div>
    <div class="tiny" id="agFxMsg"></div>
    <details class="ag-vars"><summary>Variables you can use</summary><div class="tiny">${Object.entries(AG_VARS).map(([k, d]) => `<div><code>${k}</code> ${esc(d)}</div>`).join("")}<div style="margin-top:4px">Functions: ${Object.keys(AG_FUNCS).map(f => `<code>${f}()</code>`).join(" ")}. Spread formulas add points to the home team's margin (max ±10); total formulas add points to the total (max ±15).</div></div></details>
-   <div class="ag-row" style="justify-content:space-between;margin-top:10px"><button class="btn gold" id="agSave">SAVE MY MODEL</button><button class="btn ghost" id="agReset">RESET TO KJ DEFAULTS</button></div><div class="tiny" id="agSaveMsg"></div>`;
+   <div class="ag-row" style="justify-content:space-between;margin-top:10px"><button class="btn gold" id="agSave">SAVE MY MODEL</button><button class="btn ghost" id="agReset">RESET TO BASE MODEL</button></div><div class="tiny" id="agSaveMsg"></div>`;
 }
 function agWireSide() {
   const msg = (id, t, ok) => { const e = $(id); if (e) { e.textContent = t; e.style.color = ok ? "var(--green)" : "var(--red)"; } };
@@ -3991,7 +4130,7 @@ function agWireSide() {
     const cur = agModel(); Object.keys(ch).forEach(k => { if (JSON.stringify(ch[k]) === JSON.stringify(cur[k])) delete ch[k]; });
     if (!Object.keys(ch).length) return msg("#agSaveMsg", "Nothing changed.", true);
     run(ch, "Edited on the dashboard"); };
-  const rs = $("#agReset"); if (rs) rs.onclick = () => run({reset: true}, "Reset to KJ's Picks defaults");
+  const rs = $("#agReset"); if (rs) rs.onclick = () => { if (confirm("Reset your agent to the base KJ’s Picks model? You can undo this from the change log.")) run({reset: true}, "Reset to the base KJ's Picks model"); };
   const ta = $("#agTeamAdd"); if (ta) ta.onclick = () => { const t = $("#agTeamN").value.trim(), v = +$("#agTeamV").value; if (!t || !isFinite(v) || !$("#agTeamV").value) return msg("#agSaveMsg", "Pick a team and a number of points.");
     run({team_adj: {[t]: v}}, `${t} ${sgn(v)} pts`); };
   document.querySelectorAll("[data-agteam]").forEach(b => b.onclick = () => run({team_adj: {[b.dataset.agteam]: null}}, `Removed ${b.dataset.agteam} adjustment`));
@@ -4010,11 +4149,13 @@ function agentView() {
   return `<div class="ag-head"><div><h2 class="sec" style="color:var(--green);text-shadow:var(--g-glow);margin:18px 0 4px">🤖 MY AGENT <small>your personal KJ’s Picks co-pilot</small></h2>
      <div class="tiny muted">Your agent sees every official play and every number from the original KJ’s Picks model. Anything you change here applies <b>only inside your Agent portal</b>: the official picks, the record and the rest of the site stay exactly as the model made them.</div></div>
     <div class="ptabs ag-tabs">${[["chat", "💬 CHAT"], ["picks", "🎯 MY PICKS"], ["model", "🧮 MY MODEL"], ["record", "📈 RECORD"]].map(([k, l]) => `<button data-agtab="${k}" class="${AG.tab === k ? "on" : ""}">${l}</button>`).join("")}</div></div>
+   <div id="agReset2"></div>
    <div class="ag-grid tab-${AG.tab}">
     <section class="ag-chat panel" aria-label="Chat with your agent">
      <div class="ag-msgs" id="agMsgs" aria-live="polite"></div>
      <div class="ag-status" id="agStatus" style="display:none"></div>
-     <div class="ag-sugg">${AG_SUGGEST.map(s => `<button data-agq="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+     <div class="ag-sugg">${AG_SUGGEST.slice(0, 4).map(s => `<button data-agq="${esc(s)}">${esc(s)}</button>`).join("")}<button id="agIdeasBtn" class="ideas">💡 MORE IDEAS</button></div>
+     <div id="agIdeasPanel" hidden>${agIdeasHTML(true)}</div>
      <form class="ag-in" id="agForm"><textarea id="agText" rows="2" maxlength="2000" placeholder="Ask about any game, a parlay, or change your model…"></textarea><button class="btn green" type="submit">SEND</button></form>
      <div class="ag-foot"><span id="agUsage" class="tiny muted"></span><button class="btn ghost" id="agClear" style="padding:3px 10px">NEW CHAT</button></div>
      <div class="tiny muted" style="margin-top:4px">For entertainment purposes only. Not betting advice. The agent is an AI and can be wrong; always check the line with your sportsbook. 21+. 1-800-GAMBLER.</div>
@@ -4025,6 +4166,7 @@ function agentView() {
      <div class="panel ag-p ag-mod"><h3>🧮 MY MODEL</h3><div id="agModel"></div><div class="ag-sub">CHANGE LOG</div><div id="agChanges"></div><div class="ag-sub">WHAT MY AGENT REMEMBERS</div><div id="agNotes"></div></div>
     </aside></div>`;
 }
+function agWireQ(root) { if (!root) return; root.querySelectorAll("[data-agq]").forEach(b => b.onclick = () => { if (!agCloud()) { agStatus("Chat works on the members site. Your model and picks below work here too."); return; } agAsk(b.dataset.agq); }); }
 async function agentLoad() {
   if (!$("#agMsgs")) return;
   if (!AG.loaded) { try { await agLoad(); } catch (e) { AG.err = "Couldn't load your agent."; } }
@@ -4036,7 +4178,8 @@ async function agentLoad() {
   if (!live) { t.disabled = true; t.placeholder = "Chat works on the members site. Your model and picks below work here too."; }
   f.onsubmit = e => { e.preventDefault(); if (!live) return; const v = t.value; t.value = ""; agAsk(v); };
   t.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); } };
-  document.querySelectorAll("[data-agq]").forEach(b => b.onclick = () => { if (!live) return; agAsk(b.dataset.agq); });
+  agWireQ(document.querySelector(".ag-chat"));
+  const ib = $("#agIdeasBtn"); if (ib) ib.onclick = () => { const pnl = $("#agIdeasPanel"); pnl.hidden = !pnl.hidden; ib.textContent = pnl.hidden ? "💡 MORE IDEAS" : "✕ HIDE IDEAS"; };
   document.querySelectorAll("[data-agtab]").forEach(b => b.onclick = () => { AG.tab = b.dataset.agtab; document.querySelectorAll("[data-agtab]").forEach(x => x.classList.toggle("on", x === b));
     const gr = document.querySelector(".ag-grid"); gr.className = "ag-grid tab-" + AG.tab; });
   $("#agClear").onclick = async () => { if (!confirm("Start a new chat? Your past messages are cleared; your model, preferences and tracked picks stay.")) return;
