@@ -945,6 +945,27 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
 .ag-resetbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,210,63,.5);background:rgba(255,210,63,.07);font:600 13px Inter}
 .ag-resetbar.base{border-color:rgba(var(--ag-rgb),.4);background:rgba(var(--ag-rgb),.05)}
 
+/* ---------- sidebar dropdowns + gold official picks ---------- */
+#side a.it.gold{color:var(--gold);text-shadow:0 0 8px rgba(255,210,63,.45)}
+#side a.it.gold i{color:var(--gold)}
+#side a.it.gold.on{background:var(--gold);color:#000;text-shadow:none;box-shadow:0 0 14px rgba(255,210,63,.55)}#side a.it.gold.on i{color:#000}
+#side details.sgrp{margin:10px 0 2px}
+#side details.sgrp>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:10px;cursor:pointer;font:900 12px var(--tech);letter-spacing:.16em;user-select:none}
+#side details.sgrp>summary::-webkit-details-marker{display:none}
+#side details.sgrp.nfl>summary{background:rgba(255,210,63,.12);color:var(--gold);border:1px solid rgba(255,210,63,.4)}
+#side details.sgrp.ncaa>summary{background:rgba(30,227,255,.1);color:#1ee3ff;border:1px solid rgba(30,227,255,.4)}
+#side details.sgrp.all>summary{color:#fff;border:1px solid var(--edge2)}
+#side details.sgrp .chev{transition:transform .2s;font-size:11px}#side details.sgrp:not([open]) .chev{transform:rotate(-90deg)}
+#side details.sgrp>a.it{margin-left:6px}
+/* ---------- member dashboard ---------- */
+.ms-tiles{grid-template-columns:repeat(5,1fr)!important}
+.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.ms-t h3{margin:0 0 6px;font:900 12px var(--tech);letter-spacing:.14em;color:var(--gold)}.ms-t h3 small{font:500 10.5px Inter;letter-spacing:0;color:var(--dim)}
+.ms-t table{width:100%;border-collapse:collapse;font-size:13px}.ms-t th{font:800 9.5px var(--tech);letter-spacing:.1em;color:var(--dim);text-align:left;padding:3px 4px}
+.ms-t td{padding:4px;border-top:1px solid rgba(255,255,255,.06)}
+.ms-ins div{margin:4px 0;font:500 14px/1.5 Inter}
+@media (max-width:900px){.ms-tiles{grid-template-columns:repeat(2,1fr)!important}.ms-grid{grid-template-columns:1fr}}
+
 /* KJ's Picks legal notices: per-page entertainment-only bar, first-visit 21+ gate, Terms / Privacy pages */
 .ent-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0 2px;padding:7px 12px;border-radius:10px;
   border:1px solid rgba(57,255,136,.35);background:rgba(57,255,136,.05);font:600 11.5px Inter;color:#cfe9da}
@@ -1393,20 +1414,18 @@ function kjUserBox() {
     <div class="nm">👤 ${esc(name)}</div><div class="em">${esc(u.email)}</div><div class="em" style="color:#fff">1 unit = $${num(UNIT(), UNIT() % 1 ? 2 : 0)} · <a href="#" data-unit="1">change</a></div><button data-logout="1">LOG OUT</button></div>`;
 }
 function sidebar() {
-  const h = "#" + decodeURIComponent(location.hash.slice(1) || "home");
-  const it = (href, ico, label) => `<a class="it ${h === href || (!["#home", "#nfl", "#ncaa"].includes(href) && h.startsWith(href + "/")) ? "on" : ""}" href="${href}"><i>${ico}</i>${label}</a>`;
-  const nflOn = nflMarketsOn().length;
+  const h = "#" + decodeURIComponent(location.hash.slice(1) || "home"), base = route().base;
+  const it = (href, ico, label, cls = "") => `<a class="it ${cls} ${h === href || (!["#home", "#nfl", "#ncaa"].includes(href) && h.startsWith(href + "/")) ? "on" : ""}" href="${href}"><i>${ico}</i>${label}</a>`;
+  const nflOn = nflMarketsOn().length, op = LS.get("sideOpen", {});
+  const grp = (key, title, cls, links) => `<details class="sgrp ${cls}" data-sg="${key}" ${(op[key] ?? (base === key)) || base === key ? "open" : ""}><summary>${title}<span class="chev" aria-hidden="true">▾</span></summary>${links}</details>`;
   $("#side").innerHTML = `<a class="logo" href="#home">KJ’S PICKS</a>${kjUserBox()}<a class="side-agent ${h === "#agent" ? "on" : ""}" href="#agent"><i>🤖</i><span>AGENT<small>your AI co-pilot</small></span></a>
-    <div class="grp all">SPORTSBOOK</div>
-    ${it("#home", "⌂", "HOME")}${it("#picks", "★", "OFFICIAL PICKS")}${it("#ncaa", "🎓", "NCAA")}${it("#nfl", "🏈", "NFL")}${it("#live", "●", "GAMEDAY LIVE")}${it("#games", "▦", "GAMES")}${it("#ncaa/props", "◎", "PLAYER PROPS")}${it("#card", "🎟", "MY CARD")}
-    ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#results", "✓", "RESULTS")}${it("#ncaa/model", "◉", "MODEL LAB")}${it("#quant", "◈", "QUANT ENGINE")}${it("#optimal", "◇", "OPTIMAL CARD (SHADOW)")}${alertsLive() ? it("#alerts", "📱", "ALERTS") : ""}${it("#settings", "⚙", "SETTINGS")}${it("#terms", "§", "TERMS & PRIVACY")}
-    ${isAdmin() ? `<div class="grp all" style="border-color:var(--gold);color:var(--gold)">ADMIN</div>${it("#admin", "⚙", "ADMIN PORTAL")}` : ""}
-    <div class="grp nfl">🏈 NFL</div>
-    ${it("#nfl", "◆", "NFL DASHBOARD")}${it("#nfl/picks", "★", "NFL OFFICIAL PICKS" + (nflOn ? "" : " (OFF)"))}${it("#nfl/games", "▦", "NFL GAMES & FAIR LINES")}${it("#nfl/live", "●", "NFL LIVE")}${it("#nfl/results", "✓", "NFL RESULTS")}${it("#nfl/model", "◉", "NFL MODEL HEALTH")}
-    <div class="grp ncaa">🎓 COLLEGE FOOTBALL</div>
-    ${it("#ncaa", "◆", "NCAA DASHBOARD")}${it("#ncaa/picks", "★", "NCAA OFFICIAL PICKS")}${it("#ncaa/props", "◎", "PLAYER PROPS")}${it("#ncaa/games", "▦", "GAMES & FAIR LINES")}${it("#ncaa/live", "●", "NCAA LIVE")}
-    ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#ncaa/tool", "⚔", "WHO WOULD WIN?")}${it("#ncaa/results", "✓", "NCAA RESULTS")}${it("#ncaa/model", "◉", "NCAA MODEL")}
+    ${it("#home", "⌂", "HOME")}${it("#picks", "★", "OFFICIAL PICKS", "gold")}${it("#mystats", "📊", "MY DASHBOARD")}${it("#card", "🎟", "MY CARD")}${it("#live", "●", "GAMEDAY LIVE")}${it("#results", "✓", "RESULTS")}
+    ${grp("nfl", "🏈 NFL", "nfl", it("#nfl", "◆", "NFL DASHBOARD") + it("#nfl/picks", "★", "NFL OFFICIAL PICKS" + (nflOn ? "" : " (OFF)"), "gold") + it("#nfl/games", "▦", "GAMES & FAIR LINES") + it("#nfl/live", "●", "NFL LIVE") + it("#nfl/results", "✓", "NFL RESULTS") + it("#nfl/model", "◉", "NFL MODEL HEALTH"))}
+    ${grp("ncaa", "🎓 COLLEGE FOOTBALL", "ncaa", it("#ncaa", "◆", "NCAA DASHBOARD") + it("#ncaa/picks", "★", "NCAA OFFICIAL PICKS", "gold") + it("#ncaa/games", "▦", "GAMES & FAIR LINES") + it("#ncaa/props", "◎", "PLAYER PROPS") + it("#ncaa/live", "●", "NCAA LIVE") + it("#ncaa/rankings", "#", "POWER RANKINGS") + it("#ncaa/tool", "⚔", "WHO WOULD WIN?") + it("#ncaa/results", "✓", "NCAA RESULTS") + it("#ncaa/model", "◉", "NCAA MODEL LAB"))}
+    ${grp("lab", "🔬 MODEL & QUANT", "all", it("#quant", "◈", "QUANT ENGINE") + it("#optimal", "◇", "OPTIMAL CARD (SHADOW)"))}
+    ${grp("acct", "⚙ ACCOUNT", "all", (alertsLive() ? it("#alerts", "📱", "TEXT ALERTS") : "") + it("#settings", "⚙", "SETTINGS") + it("#terms", "§", "TERMS & PRIVACY") + (isAdmin() ? it("#admin", "⚙", "ADMIN PORTAL", "gold") : ""))}
     <div class="disc"><b>For entertainment purposes only.</b> Not a sportsbook or bookie: KJ’s Picks takes no bets; any fee is only for access to model information. Not betting, financial or legal advice. No guarantees. 21+. Void where prohibited. Gambling problem? Call 1-800-GAMBLER.<br><a href="#terms">Terms</a> · <a href="#privacy">Privacy</a> · <a href="#home" data-jump="disclosures">Disclosures</a></div>`;
+  $("#side").querySelectorAll("details[data-sg]").forEach(d => d.addEventListener("toggle", () => { const o = LS.get("sideOpen", {}); o[d.dataset.sg] = d.open; LS.set("sideOpen", o); }));
   const close = () => { $("#side").classList.remove("open"); $("#sidedim").classList.remove("on"); };
   $("#side").querySelectorAll("a").forEach(a => a.addEventListener("click", () => { close(); if (a.dataset.jump) setTimeout(() => { const el = document.getElementById(a.dataset.jump); el && el.scrollIntoView({behavior: "smooth"}); }, 80); }));
   $("#sidedim").onclick = close;
@@ -2205,7 +2224,7 @@ function addToCard(gid, label, units) { const c = LS.get("card", []); if (!c.som
   c.push(e); LS.set("card", c); nav(); } }
 function card() {
   const c = LS.get("card", []), P = LS.get("parlays", []);
-  if (!c.length && !P.length) return `<h2 class="sec">🎟 MY CARD</h2><div class="empty">Your card is empty. Tap <b>+ ADD TO CARD</b> on any bet, prop or live line, or <b>+ ADD GAME TO CARD</b> to just follow a game. Your card lives only in this browser and is separate from the model's official record.</div>`;
+  if (!c.length && !P.length) return `<h2 class="sec">🎟 MY CARD</h2>${histGet().length ? `<div class="panel small" style="margin-bottom:8px">Your settled picks are in <a href="#mystats"><b>MY DASHBOARD</b></a> (${histGet().length}).</div>` : ""}<div class="empty">Your card is empty. Tap <b>+ ADD TO CARD</b> on any bet, prop or live line, or <b>+ ADD GAME TO CARD</b> to just follow a game. Your card lives only in this browser and is separate from the model's official record.</div>`;
   let risk = 0, nb = 0;
   const games = c.map((x, i) => [x, i]).filter(([x]) => x.type === "game" && (LS.get("cardf", "ALL") === "ALL" || (LS.get("cardf") === "NFL") === (LG_OF[String(x.gid)] === "NFL" || !!NFL_BY_ESPN[String(x.gid)]))).map(([x, i]) => `<div class="gc" ${G[x.gid] ? `data-g="${x.gid}"` : ""}><div class="top"><span class="chip">👁 TRACKED GAME</span><span class="tiny muted">added ${x.added ? esc(new Date(x.added).toLocaleString([], {month: "short", day: "numeric", hour: "numeric", minute: "2-digit"})) : ""}</span></div>
      <div style="font:800 18px Inter;margin:4px 0">${esc(x.label)}</div><div data-clive="${i}">${trackGameHTML(null, x)}</div>
@@ -2232,7 +2251,9 @@ function card() {
       <div><div class="k">STAKE</div><div class="v y">$${(x.units * UNIT()).toFixed(2)}</div></div><div><div class="k">MODEL EV NOW</div><div class="v ${b ? clsv(b.ev) : ""}">${b ? spct(b.ev) : "–"}</div></div></div>
      <div class="tk-foot"><span class="pay">${toWin == null ? "" : `TO WIN $${toWin.toFixed(2)} · PAYOUT $${(toWin + x.units * UNIT()).toFixed(2)}`}</span><span class="mono small" style="color:${confColor(x.conf)}">${x.conf != null ? "CONF " + x.conf : ""}</span>
      <button class="btn ghost" data-rm="${i}" style="padding:4px 10px">REMOVE</button></div></div>`; });
+  const nh = histGet().length;
   return `<h2 class="sec">🎟 MY CARD <small>your personal tracker · stored in this browser · live updates every 30 seconds · being on your card does NOT mean the model recommends it</small></h2>
+   <div class="panel small" style="margin-bottom:8px">✅ When a game ends, its pick is graded and moves to <a href="#mystats"><b>MY DASHBOARD</b></a>, where your full record, units and breakdowns are kept${nh ? ` (${nh} settled so far)` : ""}.</div>
    <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="stat"><div class="v">${nb}</div><div class="k">Bets</div></div><div class="stat"><div class="v">${games.length}</div><div class="k">Tracked games</div></div><div class="stat"><div class="v">${risk.toFixed(2)}u</div><div class="k">Total risk</div></div>
    <div class="stat"><div class="v">$${(risk * UNIT()).toFixed(0)}</div><div class="k">At $${UNIT()}/unit</div></div></div>
    <div class="panel small"><span class="chip official">★ OFFICIAL PLAY</span> passed every model check · <span class="chip userpick">USER PICK</span> something you chose; it's tracked the same way but isn't a model recommendation · <span class="chip">👁 TRACKED GAME</span> followed without a bet</div>
@@ -2782,6 +2803,7 @@ async function liveTick() {
   if (document.hidden) return;
   const v = route().v;
   try { if (v === "live") await renderLive(); if (v === "card") await refreshCard(); await fillSlots(); await fillTracks(); } catch (e) {}
+  try { await cardArchive(); } catch (e) {}                 // finished My Card picks -> graded history (every 5 minutes at most)
 }
 setInterval(liveTick, 30000);
 
@@ -3788,7 +3810,8 @@ async function agLoad() {
       AG.cloudOff = true; AG.err = "Agent chat is switching on soon. Your model and picks below already work (saved in this browser).";
       return agLoad();
     }
-    if (p.data) AG.profile = {model: p.data.model || {}, notes: p.data.notes || "", changes: p.data.changes || []};
+    if (p.data) { AG.profile = {model: p.data.model || {}, notes: p.data.notes || "", changes: p.data.changes || [], card_history: p.data.card_history || []};
+      if (histMerge(p.data.card_history) && route().v === "mystats") setTimeout(render, 0); }
     AG.msgs = (m.data || []).reverse(); AG.picks = k.data || [];
     try { const {data} = await c.functions.invoke("agent", {body: {action: "usage"}}); if (data) AG.usage = data; } catch (e) {}
   } else {
@@ -3797,7 +3820,7 @@ async function agLoad() {
   AG.loaded = true;
 }
 async function agSaveProfile() {
-  if (agCloud()) { const {error} = await KJ.client.from("agent_profiles").upsert({user_id: KJ.user.id, model: AG.profile.model, notes: AG.profile.notes, changes: AG.profile.changes, updated_at: new Date().toISOString()}, {onConflict: "user_id"});
+  if (agCloud()) { const {error} = await KJ.client.from("agent_profiles").upsert({user_id: KJ.user.id, model: AG.profile.model, notes: AG.profile.notes, changes: AG.profile.changes, card_history: histGet().slice(-2000), updated_at: new Date().toISOString()}, {onConflict: "user_id"});
     if (error) throw new Error("couldn't save your model"); }
   else LS.set("agent.profile", AG.profile);
 }
@@ -4414,6 +4437,127 @@ function homeTop() {
        : '<div class="empty small">Rankings update with the next model run.</div>'}</section></div>`;
 }
 
+/* ================= MY CARD HISTORY + MEMBER DASHBOARD =================
+   When a My Card game is final, the pick is graded with the same live logic My Card uses (ESPN final score), moved off
+   My Card, and kept in the member's history (this browser + their account), which powers MY DASHBOARD. */
+const histGet = () => LS.get("cardHistory", []);
+const histKey = h => `${h.kind || "single"}|${h.gid || ""}|${h.label}|${h.added || ""}`;
+function histSet(H) { LS.set("cardHistory", H.slice(-2000)); if (typeof agCloud === "function" && agCloud()) { AG.profile.card_history = H.slice(-2000); agSaveProfile().catch(() => {}); } }
+function histMerge(cloud) {                       // union of this browser's history and the account's (no duplicates)
+  const H = histGet(), seen = new Set(H.map(histKey)); let add = 0;
+  (cloud || []).forEach(h => { if (!seen.has(histKey(h))) { H.push(h); seen.add(histKey(h)); add++; } });
+  if (add) LS.set("cardHistory", H); return add;
+}
+const RES = {won: "WIN", lost: "LOSS", push: "PUSH", void: "VOID"};
+let ARCH_AT = 0;
+async function cardArchive(force) {
+  if (!force && Date.now() - ARCH_AT < 5 * 60e3) return 0; ARCH_AT = Date.now();
+  const c = LS.get("card", []).map(legacyMeta), P = LS.get("parlays", []), now = Date.now();
+  const due = e => { const ko = e.kickoff || ((G[e.gid] || {}).kickoff); return !ko || now - new Date(ko) > 3 * 3600e3; };
+  const ids = [...new Set([...c.filter(due).map(e => String(e.gid)), ...P.flatMap(p => p.legs.filter(due).map(l => String(l.gid)))])];
+  if (!ids.length) return 0;
+  try { await liveBoard(); } catch (e) {}
+  const gs = {};
+  await Promise.all(ids.map(async id => { try { const row = c.find(e => String(e.gid) === id) || P.flatMap(p => p.legs).find(l => String(l.gid) === id) || {};
+    if (row.league && !LG_OF[id]) LG_OF[id] = row.league; gs[id] = await liveSummary(id); } catch (e) {} }));
+  const fin = id => gs[id] && gs[id].state === "post" ? gs[id] : null;
+  const score = g => `${g.away.abbr} ${g.away.score} - ${g.home.abbr} ${g.home.score}`;
+  const H = histGet(), keepC = [], keepP = []; let moved = 0;
+  c.forEach(e => { const g = fin(String(e.gid));
+    if (!g) { keepC.push(e); return; }
+    if (e.type === "game") { moved++; return; }                                    // a followed game simply leaves the card
+    const s = betStatus(e, g), r = RES[s.k] || "VOID", price = e.price ?? e.odds, u = +e.units || 0;
+    H.push({...e, kind: "single", league: e.league || (NFL_BY_ESPN[String(e.gid)] ? "NFL" : "NCAA"), result: r, odds: price,
+      profit_units: r === "WIN" ? u * (dec(price) - 1) : r === "LOSS" ? -u : 0, final_score: score(g), graded_at: new Date().toISOString()});
+    moved++; });
+  P.forEach(p => { const ss = p.legs.map(l => { const g = fin(String(l.gid)); return g ? {k: betStatus(legacyMeta(l), g).k, g} : null; });
+    const lost = ss.some(x => x && x.k === "lost"), done = ss.every(x => x);
+    if (!lost && !done) { keepP.push(p); return; }
+    const d = p.legs.reduce((a, l, j) => a * (ss[j] && ["push", "void"].includes(ss[j].k) ? 1 : dec(l.odds)), 1);
+    const u = (p.stake || 0) / UNIT(), r = lost ? "LOSS" : ss.every(x => ["push", "void"].includes(x.k)) ? "PUSH" : "WIN";
+    H.push({kind: "parlay", label: `${p.legs.length}-leg parlay: ${p.legs.map(l => l.label).join(" + ")}`, legs: p.legs.map((l, j) => ({label: l.label, odds: l.odds, result: ss[j] ? RES[ss[j].k] : "LOSS"})),
+      odds: amer(d), units: u, added: p.created, league: [...new Set(p.legs.map(l => l.league || "NCAA"))].join("+"), result: r,
+      profit_units: r === "WIN" ? u * (d - 1) : r === "LOSS" ? -u : 0, final_score: ss.filter(Boolean).map(x => score(x.g)).join(" | "), graded_at: new Date().toISOString()});
+    moved++; });
+  if (moved) { LS.set("card", keepC); LS.set("parlays", keepP); histSet(H); nav(); if (["card", "mystats"].includes(route().v)) render(); }
+  return moved;
+}
+
+/* ---------- MY DASHBOARD ---------- */
+function msGroup(rows, keyFn) {
+  const o = {};
+  rows.forEach(h => { const k = keyFn(h); if (k == null) return; const x = o[k] = o[k] || {w: 0, l: 0, p: 0, units: 0, staked: 0, n: 0};
+    x.n++; x.staked += +h.units || 0; x.units += +h.profit_units || 0; if (h.result === "WIN") x.w++; else if (h.result === "LOSS") x.l++; else x.p++; });
+  return o;
+}
+function msTable(title, o, note) {
+  const rows = Object.entries(o).sort((a, b) => b[1].n - a[1].n);
+  if (!rows.length) return "";
+  return `<div class="panel ms-t"><h3>${title}${note ? ` <small>${note}</small>` : ""}</h3><table><thead><tr><th></th><th>Record</th><th>Win %</th><th>Units</th><th>ROI</th></tr></thead><tbody>
+   ${rows.map(([k, x]) => `<tr><td><b>${esc(k)}</b>${x.n < 10 ? ' <span class="tiny muted">small sample</span>' : ""}</td><td class="mono">${x.w}-${x.l}${x.p ? "-" + x.p : ""}</td>
+     <td class="mono">${x.w + x.l ? pct(x.w / (x.w + x.l), 0) : "–"}</td><td class="mono ${clsv(x.units)}">${fmtU(x.units)}</td><td class="mono ${clsv(x.units)}">${x.staked ? spct(x.units / x.staked) : "–"}</td></tr>`).join("")}</tbody></table></div>`;
+}
+const msOddsBucket = o => o == null ? null : o <= -200 ? "-200 or shorter" : o < -110 ? "-199 to -111" : o <= 100 ? "-110 to +100" : o <= 200 ? "+101 to +200" : "+201 or longer";
+const msType = h => h.kind === "parlay" ? "Parlay" : h.type === "prop" ? "Player prop" : h.type === "total" ? "Total" : h.type === "ml" ? "Moneyline" : "Spread";
+function msInsights(H, by) {
+  const out = [], settled = H.filter(h => h.result !== "VOID");
+  if (settled.length < 10) { out.push(`You have <b>${settled.length}</b> settled pick${settled.length === 1 ? "" : "s"}. Records swing a lot over small samples; patterns start meaning something after about 20–30 picks.`); return out; }
+  const off = by.official["Official KJ’s Picks plays"], own = by.official["Your own picks"];
+  if (off && own && off.n >= 5 && own.n >= 5) out.push(off.units > own.units ? `Picks that were <b>official KJ’s Picks plays</b> have done better for you (${fmtU(off.units)}) than your own picks (${fmtU(own.units)}).` : `Your own picks (${fmtU(own.units)}) have outperformed the official plays you followed (${fmtU(off.units)}) so far. Keep watching it; the samples are small.`);
+  const types = Object.entries(by.type).filter(([, x]) => x.n >= 8).sort((a, b) => b[1].units / b[1].staked - a[1].units / a[1].staked);
+  if (types.length >= 2) out.push(`Your best bet type so far is <b>${esc(types[0][0])}</b> (${fmtU(types[0][1].units)}); your weakest is <b>${esc(types[types.length - 1][0])}</b> (${fmtU(types[types.length - 1][1].units)}).`);
+  const par = by.type.Parlay; if (par && par.n >= 5 && par.units < 0) out.push(`Parlays are ${par.w}-${par.l} for ${fmtU(par.units)}. Every extra leg multiplies the sportsbook's margin.`);
+  const avg = settled.reduce((a, h) => a + (+h.units || 0), 0) / settled.length, big = settled.filter(h => (+h.units || 0) > avg * 1.75);
+  if (big.length >= 5) { const bu = big.reduce((a, h) => a + h.profit_units, 0); out.push(`Your biggest stakes (over ${num(avg * 1.75, 2)}u) are ${fmtU(bu)} combined. ${bu < 0 ? "Sizing up hasn't paid off; consider keeping stakes level." : ""}`); }
+  return out;
+}
+function myStatsView() {
+  const H = histGet(), S = H.filter(h => ["WIN", "LOSS", "PUSH"].includes(h.result)), open = LS.get("card", []).filter(x => x.type !== "game").length + LS.get("parlays", []).length;
+  const w = S.filter(h => h.result === "WIN").length, l = S.filter(h => h.result === "LOSS").length, p = S.filter(h => h.result === "PUSH").length;
+  const units = S.reduce((a, h) => a + (+h.profit_units || 0), 0), staked = S.reduce((a, h) => a + (+h.units || 0), 0);
+  const sorted = S.slice().sort((a, b) => new Date(a.graded_at) - new Date(b.graded_at));
+  let streak = 0, sk = null, best = 0, cur = 0;
+  sorted.forEach(h => { if (h.result === "PUSH") return; if (h.result === "WIN") { cur = cur > 0 ? cur + 1 : 1; } else { cur = cur < 0 ? cur - 1 : -1; } best = Math.max(best, cur); });
+  streak = cur; sk = streak > 0 ? `W${streak}` : streak < 0 ? `L${-streak}` : "–";
+  const avgOdds = S.length ? Math.round(S.reduce((a, h) => a + (dec(h.odds || -110)), 0) / S.length * 100) / 100 : null;
+  const bestWin = S.reduce((m, h) => h.profit_units > (m ? m.profit_units : -1e9) ? h : m, null);
+  const by = {league: msGroup(S, h => h.league || "NCAA"), type: msGroup(S, msType),
+    official: msGroup(S, h => h.official ? "Official KJ’s Picks plays" : "Your own picks"),
+    side: msGroup(S.filter(h => h.kind !== "parlay" && h.type !== "total" && h.type !== "prop"), h => (h.odds ?? h.price) < 0 ? "Favorites" : "Underdogs"),
+    total: msGroup(S.filter(h => h.type === "total"), h => h.side === "over" ? "Overs" : "Unders"),
+    odds: msGroup(S, h => msOddsBucket(h.odds)), day: msGroup(S, h => new Date(h.kickoff || h.added || h.graded_at).toLocaleDateString("en-US", {weekday: "long"})),
+    month: msGroup(S, h => new Date(h.graded_at).toLocaleDateString("en-US", {month: "long", year: "numeric"}))};
+  const curve = []; let run = 0; sorted.forEach((h, i) => { run += +h.profit_units || 0; curve.push({x: i + 1, y: Math.round(run * 100) / 100, t: h.label}); });
+  const R = typeof agRecord === "function" ? agRecord() : null;
+  const tile = (k, v, cls = "") => `<div class="stat ${cls}"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+  return `<h2 class="sec" style="color:var(--blue);text-shadow:var(--b-glow)">📊 MY DASHBOARD <small>every pick you followed on My Card, graded from final scores · 1 unit = $${num(UNIT(), UNIT() % 1 ? 2 : 0)}</small></h2>
+   <div class="stats ms-tiles">${tile("Record", S.length ? `${w}-${l}${p ? "-" + p : ""}` : "0-0")}${tile("Win %", w + l ? pct(w / (w + l), 1) : "–")}${tile("Units", fmtU(units), clsv(units))}
+    ${tile("Profit", `${units < 0 ? "-" : ""}$${num(Math.abs(units * UNIT()), 2)}`, clsv(units))}${tile("ROI", staked ? spct(units / staked) : "–", clsv(units))}${tile("Staked", `$${num(staked * UNIT(), 0)}`)}
+    ${tile("Current streak", sk, streak > 0 ? "g" : streak < 0 ? "r" : "")}${tile("Best win streak", best || "–")}${tile("Avg decimal odds", avgOdds ?? "–")}${tile("Open on My Card", `<a href="#card">${open}</a>`, "y")}</div>
+   ${S.length ? `<div class="panel"><h3 style="margin-top:0">UNITS OVER TIME</h3>${lineChart([{data: curve, c: units >= 0 ? "#39ff88" : "#ff4566", label: "units"}], {refs: [{y: 0, c: "rgba(255,255,255,.35)", label: "break-even"}]})}
+     ${bestWin && bestWin.profit_units > 0 ? `<div class="tiny muted">Best win: <b>${esc(bestWin.label)}</b> ${fmtU(bestWin.profit_units)}</div>` : ""}</div>` : ""}
+   <h2 class="sec sub">WHAT YOUR RECORD SAYS</h2><div class="panel ms-ins">${msInsights(H, by).map(x => `<div>• ${x}</div>`).join("") || "<div>No settled picks yet.</div>"}
+    <div class="tiny muted" style="margin-top:6px">Observations come only from your own graded picks. For entertainment purposes only; past results don't predict future ones.</div></div>
+   <div class="ms-grid">${msTable("BY LEAGUE", by.league)}${msTable("BY BET TYPE", by.type)}${msTable("OFFICIAL vs YOUR OWN PICKS", by.official, "official = it was a KJ’s Picks official play when you added it")}
+    ${msTable("FAVORITES vs UNDERDOGS", by.side, "spreads & moneylines")}${msTable("OVERS vs UNDERS", by.total)}${msTable("BY ODDS", by.odds)}${msTable("BY GAME DAY", by.day)}${msTable("BY MONTH", by.month)}</div>
+   ${R ? `<h2 class="sec sub">🤖 AGENT-TRACKED PICKS <small>picks your Agent tracks for you</small></h2><div class="panel"><b>${esc(R.record)}</b> · ${fmtU(R.units || 0)} · ROI ${R.roi == null ? "–" : spct(R.roi)} · ${R.open} open · <a href="#agent">open my Agent →</a></div>` : ""}
+   <h2 class="sec sub">PICK HISTORY <small>${H.length} settled pick${H.length === 1 ? "" : "s"} · stored in this browser${typeof agCloud === "function" && agCloud() ? " and your account" : ""}</small></h2>
+   ${H.length ? `<div class="filters"><button class="btn ghost" id="msCsv">⬇ EXPORT CSV</button></div><div class="tw"><table class="cards ms-h"><thead><tr><th>Date</th><th>Pick</th><th>Odds</th><th>Units</th><th>Result</th><th>Profit</th><th>Final</th><th></th></tr></thead><tbody>
+     ${H.slice().reverse().slice(0, 300).map((h, i) => `<tr><td data-l="DATE" class="mono small">${esc(new Date(h.graded_at).toLocaleDateString([], {month: "short", day: "numeric"}))}</td>
+      <td data-l="PICK">${lgBadge(String(h.league || "NCAA").split("+")[0])} <b>${esc(h.label)}</b>${h.official ? ' <span class="chip official">★ OFFICIAL</span>' : ""}</td>
+      <td data-l="ODDS" class="mono">${odds(h.odds)}</td><td data-l="UNITS" class="mono">${num(h.units, 2)}</td><td data-l="RESULT"><span class="sb ${esc(h.result)}">${esc(h.result)}</span></td>
+      <td data-l="PROFIT" class="mono ${clsv(h.profit_units)}">${fmtU(h.profit_units)} <span class="tiny muted">($${num((h.profit_units || 0) * UNIT(), 2)})</span></td><td data-l="FINAL" class="small muted">${esc(h.final_score || "")}</td>
+      <td><button class="ag-x" data-msdel="${esc(histKey(h))}" aria-label="Delete">×</button></td></tr>`).join("")}</tbody></table></div>`
+     : `<div class="empty">No settled picks yet. Add picks to <a href="#card">My Card</a>; when their games end, they're graded and land here automatically.</div>`}
+   <div class="tiny muted" style="margin-top:8px">For entertainment purposes only. Dollar amounts use your unit size. Results come from final scores (ESPN); a pick whose game was postponed may show as VOID.</div>`;
+}
+function wireMyStats() {
+  const csv = $("#msCsv"); if (csv) csv.onclick = () => { const H = histGet(), cols = ["graded_at", "league", "label", "odds", "units", "result", "profit_units", "final_score", "official"];
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`; const body = [cols.join(","), ...H.map(h => cols.map(c => q(h[c])).join(","))].join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([body], {type: "text/csv"})); a.download = "kjs-picks-my-history.csv"; a.click(); };
+  document.querySelectorAll("[data-msdel]").forEach(b => b.onclick = () => { if (!confirm("Delete this pick from your history?")) return; histSet(histGet().filter(h => histKey(h) !== b.dataset.msdel)); render(); });
+}
+
 /* ---------- SETTINGS ---------- */
 function settingsView() {
   const fxp = LS.get("fxpref", "auto");
@@ -4436,7 +4580,7 @@ function render() {
   document.documentElement.style.setProperty("--team-rgb", tmT ? teamRgb(tmT, "176,107,255") : "176,107,255");
   nav(); const app = $("#app");
   const gamesV = () => LEAGUE() === "NFL" ? `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>` + nflBoard() : LEAGUE() === "NCAA" ? games() : `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>${nflBoard()}<h2 class="sec">NCAA GAMES</h2>` + games();
-  const views = {terms: termsView, privacy: privacyView, agent: agentView, settings: settingsView, alerts: alertsView, admin: adminView, optimal: optimalView, quant: quantView, home: infoHome, live: liveView, picks, results: resultsView, props: propsView, games: gamesV, rankings, tool, card,
+  const views = {mystats: myStatsView, terms: termsView, privacy: privacyView, agent: agentView, settings: settingsView, alerts: alertsView, admin: adminView, optimal: optimalView, quant: quantView, home: infoHome, live: liveView, picks, results: resultsView, props: propsView, games: gamesV, rankings, tool, card,
     model: () => r.lg === "NFL" ? nflHealthView() : modelView(r.arg), team: () => team(r.arg), dash: () => r.lg === "NFL" ? nflDash() : home()};
   app.innerHTML = entBar() + (LOCKED && !["home", "terms", "privacy"].includes(r.v) ? lockedView() : staleBanner() + (views[r.v] || infoHome)());
   window.scrollTo(0, 0);
@@ -4458,6 +4602,7 @@ function render() {
   if (r.v === "home" || r.v === "dash") fillWall();
   if (r.v === "settings") wireSettings();
   if (r.v === "agent") agentLoad();
+  if (r.v === "mystats") wireMyStats();
   app.querySelectorAll("[data-agpre]").forEach(a => a.addEventListener("click", () => LS.set("agentPrefill", a.dataset.agpre)));
   document.querySelectorAll("[data-unit]").forEach(a => a.onclick = e => { e.preventDefault(); unitModal(true); });
   if (window.kjLogView && window.KJ && KJ.client) kjLogView(location.hash || "#home");
@@ -4466,7 +4611,7 @@ setInterval(() => document.querySelectorAll("[data-ko]").forEach(el => { const s
   el.textContent = s <= 0 ? "LIVE / FINAL" : `${Math.floor(s / 3600)}h ${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}m ${String(Math.floor(s % 60)).padStart(2, "0")}s`; }), 1000);
 window.addEventListener("hashchange", () => { closeModal(); render(); window.scrollTo(0, 0); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-ticker(); header(); acctMenu(); render(); newPickAlerts(); ageGate(); unitBoot();
+ticker(); header(); acctMenu(); render(); newPickAlerts(); ageGate(); unitBoot(); setTimeout(() => cardArchive(true).catch(() => {}), 1500);
 })();
 </script>
 </body>
