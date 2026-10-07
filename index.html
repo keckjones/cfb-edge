@@ -917,6 +917,22 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
 .unit-chips button{padding:7px 12px;border-radius:999px;border:1px solid rgba(var(--ag-rgb),.45);background:rgba(var(--ag-rgb),.07);color:#e9fff1;font:800 12.5px var(--mono);cursor:pointer}
 .unit-ex{min-height:20px;font:600 13px/1.5 Inter;color:#cfc6e6}.unit-ex b{color:#fff}
 
+/* KJ's Picks legal notices: per-page entertainment-only bar, first-visit 21+ gate, Terms / Privacy pages */
+.ent-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0 2px;padding:7px 12px;border-radius:10px;
+  border:1px solid rgba(57,255,136,.35);background:rgba(57,255,136,.05);font:600 11.5px Inter;color:#cfe9da}
+.ent-bar b{font:900 10.5px var(--tech);letter-spacing:.14em;color:var(--green)}
+.ent-links{margin-left:auto;display:flex;gap:10px}.ent-links a{color:#9fe6ff;font-weight:700}
+@media (max-width:760px){.ent-links{margin-left:0}}
+.age-sheet{max-width:600px;padding:24px 24px 18px;text-align:left;border:2px solid var(--gold);box-shadow:0 0 40px rgba(255,210,63,.25)}
+.age-sheet .ld-logo{font:400 46px/1 var(--disp);letter-spacing:.06em;color:#fff6fb;text-shadow:0 0 2px #fff,0 0 16px rgba(255,46,136,.9);text-align:center}
+.age-sheet h2{margin:10px 0 8px;font:900 15px var(--tech);letter-spacing:.24em;color:var(--gold);text-align:center}
+.age-sheet ul{margin:0 0 14px;padding-left:18px;font:500 14px/1.55 Inter;color:#e6e0f5}.age-sheet li{margin:5px 0}.age-sheet b{color:#fff}
+.legal{max-width:880px}
+.legal .lead{font:600 15px/1.6 Inter;color:#fff;padding:12px 14px;border-radius:12px;border:1px solid rgba(57,255,136,.4);background:rgba(57,255,136,.06)}
+.legal h4{margin:18px 0 4px;font:900 12px var(--tech);letter-spacing:.14em;color:var(--gold)}
+.legal p,.legal li{font:500 14px/1.65 Inter;color:#ddd5f2}.legal ul{padding-left:18px}
+footer b{color:var(--green)}footer a{color:#9fe6ff}
+
 </style>
 </head>
 <body>
@@ -1058,7 +1074,7 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
   <div class="stats" id="stats"></div>
   <nav class="tabs" id="tabs"></nav>
   <main id="app"></main>
-  <footer>KJ’S PICKS &middot; NOT A SPORTSBOOK OR BOOKIE: no bets are taken and fees pay only for model information &middot; quantitative model output, not a guarantee &middot; 21+ &middot; Gambling problem? Call 1-800-GAMBLER</footer>
+  <footer><b>FOR ENTERTAINMENT PURPOSES ONLY.</b> KJ’S PICKS &middot; NOT A SPORTSBOOK OR BOOKIE: no bets are taken and fees pay only for access to model information &middot; not betting, financial or legal advice &middot; quantitative model output, no guarantees &middot; 21+ &middot; void where prohibited &middot; Gambling problem? Call 1-800-GAMBLER<br><a href="#terms">Terms of Use</a> &middot; <a href="#privacy">Privacy Policy</a> &middot; <a href="#home" data-jump="disclosures">Disclosures</a></footer>
 </div>
 <nav class="bnav" id="bnav"></nav>
 <aside id="side" aria-label="Site navigation"></aside><div id="sidedim"></div>
@@ -1091,7 +1107,7 @@ function kjAuthScreen(g, startMode, closable) {
         ${mode === "signup" ? '<label>NAME</label><input type="text" id="kjn" autocomplete="name">' : ""}
         <label>EMAIL</label><input type="email" id="kje" autocomplete="email">
         ${mode !== "forgot" ? `<label>PASSWORD</label><input type="password" id="kjp" autocomplete="${mode === "signup" ? "new-password" : "current-password"}" minlength="8">` : ""}
-        ${mode === "signup" ? '<div class="chk"><input type="checkbox" id="kja"><span>I am 21 or older, and I understand KJ’s Picks is an information service, not a sportsbook. I agree to the disclosures below.</span></div>' : ""}
+        ${mode === "signup" ? '<div class="chk"><input type="checkbox" id="kja"><span>I am 21 or older. I understand KJ’s Picks is <b>for entertainment purposes only</b>: an information service, not a sportsbook and not betting advice, with no guaranteed results. I agree to the <a href="#terms" target="_blank">Terms of Use</a> and <a href="#privacy" target="_blank">Privacy Policy</a>.</span></div>' : ""}
         <button class="go" id="kjgo">${mode === "login" ? "LOG IN" : mode === "signup" ? "CREATE ACCOUNT" : "EMAIL ME A RESET LINK"}</button>
         <div style="margin-top:8px;text-align:center"><a href="#" id="kjf" style="color:var(--blue);font:700 12px Inter">${mode === "forgot" ? "Back to log in" : "Forgot password?"}</a></div>`}
         <div class="msg ${cls}">${msg}</div>${kjDisc}</div>`;
@@ -1108,7 +1124,7 @@ function kjAuthScreen(g, startMode, closable) {
         if (mode === "reset") { const {error} = await c.auth.updateUser({password: pw}); if (error) throw error; history.replaceState(null, "", location.pathname + "#home"); return resolve(); }
         if (mode === "forgot") { const {error} = await c.auth.resetPasswordForEmail(email, {redirectTo: location.origin + location.pathname}); if (error) throw error; return draw("If that email has an account, a reset link is on its way.", "ok"); }
         if (mode === "login") { const {error} = await c.auth.signInWithPassword({email, password: pw}); if (error) throw error; return resolve(); }
-        if (!g.querySelector("#kja").checked) return draw("Please confirm you are 21+ and agree to the disclosures.", "err");
+        if (!g.querySelector("#kja").checked) return draw("Please confirm you are 21+ and agree to the Terms of Use.", "err");
         if (pw.length < 8) return draw("Use a password with at least 8 characters.", "err");
         const {data, error} = await c.auth.signUp({email, password: pw, options: {data: {full_name: val("#kjn").trim()}, emailRedirectTo: location.origin + location.pathname}});
         if (error) throw error;
@@ -1245,11 +1261,13 @@ function ticker() {
     it.push(`<span class="tk"><span class="k b">KJ’S PICKS MODEL: LIVE</span><span class="w">${esc(D.meta.version)}</span></span>`,
       `<span class="tk"><span class="k y">OFFICIAL RECORD</span><span class="w">${esc(A.record || "0-0")}</span><span class="${(A.units || 0) >= 0 ? "g" : "r"}">${fmtU(A.units || 0)}</span><span class="w">ROI ${A.roi == null ? "–" : spct(A.roi)}</span></span>`,
       `<span class="tk"><span class="k g">${(A.open || 0) + (A.live || 0)} OFFICIAL PICKS OPEN</span><span class="w">MEMBERS ONLY - LOG IN TO SEE THEM</span></span>`,
+      `<span class="tk"><span class="k g">FOR ENTERTAINMENT PURPOSES ONLY</span><span class="w">Not betting advice · No guarantees · 21+ · 1-800-GAMBLER</span></span>`,
       `<span class="tk"><span class="k p">${(D.meta.games_analyzed || 0).toLocaleString()} GAMES IN THE MODEL</span><span class="w">${D.meta.games_priced || 0} COLLEGE + ${((D.nfl || {}).games_count) || 0} NFL GAMES PRICED</span></span>`);
     const html = it.join("");
     $("#ticker").innerHTML = `<div class="tk-l"><span class="dot"></span>LIVE</div><div class="tk-w"><div class="tk-t" style="--dur:40s">${html}<span aria-hidden="true" style="display:inline-flex;height:100%">${html}</span></div></div>`;
     return; }
   const add = (html, cls, gid) => it.push(`<span class="tk ${cls || ""}" ${gid ? `data-g="${gid}"` : ""}>${html}</span>`);
+  add('<span class="k g">FOR ENTERTAINMENT PURPOSES ONLY</span><span class="w">Not betting advice · No guarantees · 21+ · 1-800-GAMBLER</span>');
   add(`<span class="k b">MODEL STATUS: LIVE</span><span class="w">${esc(D.meta.version)}</span><span class="d">updated ${esc(fmtClock(D.meta.updated))}</span>`);
   OFF.filter(r => offStatus(r) === "UPCOMING").forEach(r => add(`<span class="k ${r.league === "NFL" ? "y" : "b"}">${esc(r.league)} ★</span><span class="w">${esc(r.pick.toUpperCase())} (${odds(r.odds)})</span><span class="g">EV ${spct(r.ev)}</span>`));
   if (D.nfl) add(`<span class="k y">NFL MODEL UPDATE COMPLETE</span><span class="w">${esc(D.nfl.version)} · ${NFLG.length} games priced</span><span class="d">${esc(fmtClock(D.nfl.updated))}</span>`);
@@ -1315,14 +1333,14 @@ function sidebar() {
   $("#side").innerHTML = `<a class="logo" href="#home">KJ’S PICKS</a>${kjUserBox()}<a class="side-agent ${h === "#agent" ? "on" : ""}" href="#agent"><i>🤖</i><span>AGENT<small>your AI co-pilot</small></span></a>
     <div class="grp all">SPORTSBOOK</div>
     ${it("#home", "⌂", "HOME")}${it("#picks", "★", "OFFICIAL PICKS")}${it("#ncaa", "🎓", "NCAA")}${it("#nfl", "🏈", "NFL")}${it("#live", "●", "GAMEDAY LIVE")}${it("#games", "▦", "GAMES")}${it("#ncaa/props", "◎", "PLAYER PROPS")}${it("#card", "🎟", "MY CARD")}
-    ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#results", "✓", "RESULTS")}${it("#ncaa/model", "◉", "MODEL LAB")}${it("#quant", "◈", "QUANT ENGINE")}${it("#optimal", "◇", "OPTIMAL CARD (SHADOW)")}${alertsLive() ? it("#alerts", "📱", "ALERTS") : ""}${it("#settings", "⚙", "SETTINGS")}
+    ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#results", "✓", "RESULTS")}${it("#ncaa/model", "◉", "MODEL LAB")}${it("#quant", "◈", "QUANT ENGINE")}${it("#optimal", "◇", "OPTIMAL CARD (SHADOW)")}${alertsLive() ? it("#alerts", "📱", "ALERTS") : ""}${it("#settings", "⚙", "SETTINGS")}${it("#terms", "§", "TERMS & PRIVACY")}
     ${isAdmin() ? `<div class="grp all" style="border-color:var(--gold);color:var(--gold)">ADMIN</div>${it("#admin", "⚙", "ADMIN PORTAL")}` : ""}
     <div class="grp nfl">🏈 NFL</div>
     ${it("#nfl", "◆", "NFL DASHBOARD")}${it("#nfl/picks", "★", "NFL OFFICIAL PICKS" + (nflOn ? "" : " (OFF)"))}${it("#nfl/games", "▦", "NFL GAMES & FAIR LINES")}${it("#nfl/live", "●", "NFL LIVE")}${it("#nfl/results", "✓", "NFL RESULTS")}${it("#nfl/model", "◉", "NFL MODEL HEALTH")}
     <div class="grp ncaa">🎓 COLLEGE FOOTBALL</div>
     ${it("#ncaa", "◆", "NCAA DASHBOARD")}${it("#ncaa/picks", "★", "NCAA OFFICIAL PICKS")}${it("#ncaa/props", "◎", "PLAYER PROPS")}${it("#ncaa/games", "▦", "GAMES & FAIR LINES")}${it("#ncaa/live", "●", "NCAA LIVE")}
     ${it("#ncaa/rankings", "#", "POWER RANKINGS")}${it("#ncaa/tool", "⚔", "WHO WOULD WIN?")}${it("#ncaa/results", "✓", "NCAA RESULTS")}${it("#ncaa/model", "◉", "NCAA MODEL")}
-    <div class="disc"><b>Not a sportsbook or bookie.</b> KJ’s Picks takes no bets; any fee is only for access to model information. For information and entertainment only. Not betting or financial advice. 21+. Gambling problem? Call 1-800-GAMBLER. <a href="#home" data-jump="disclosures">Disclosures</a></div>`;
+    <div class="disc"><b>For entertainment purposes only.</b> Not a sportsbook or bookie: KJ’s Picks takes no bets; any fee is only for access to model information. Not betting, financial or legal advice. No guarantees. 21+. Void where prohibited. Gambling problem? Call 1-800-GAMBLER.<br><a href="#terms">Terms</a> · <a href="#privacy">Privacy</a> · <a href="#home" data-jump="disclosures">Disclosures</a></div>`;
   const close = () => { $("#side").classList.remove("open"); $("#sidedim").classList.remove("on"); };
   $("#side").querySelectorAll("a").forEach(a => a.addEventListener("click", () => { close(); if (a.dataset.jump) setTimeout(() => { const el = document.getElementById(a.dataset.jump); el && el.scrollIntoView({behavior: "smooth"}); }, 80); }));
   $("#sidedim").onclick = close;
@@ -2796,7 +2814,7 @@ function newPickAlerts() {           // a NEW official pick since your last visi
   if (seen === null) return;                                     // first visit: nothing counts as "new"
   up.filter(r => !seen.includes(r.pick_id)).slice(0, 3).forEach((r, i) => setTimeout(() => KJFX.toast(
     `<div class="t">★ NEW KJ’S PICKS PLAY · ${esc(r.league)}</div><div class="p">${esc(r.pick.toUpperCase())} <span style="font-size:.6em;color:var(--dim)">${odds(r.odds)}</span></div>
-     <div class="x2">EV ${spct(r.ev)}${r.confidence != null ? " · confidence " + r.confidence : ""} · tap to view</div>`, {onclick: () => { location.hash = "picks"; }}), 900 + i * 700));
+     <div class="x2">EV ${spct(r.ev)}${r.confidence != null ? " · confidence " + r.confidence : ""} · tap to view · entertainment only</div>`, {onclick: () => { location.hash = "picks"; }}), 900 + i * 700));
 }
 function nextKick() {
   const now = Date.now(), by = (a, b) => new Date(a.kickoff) - new Date(b.kickoff);
@@ -2884,6 +2902,8 @@ function infoHome() {
 
   <h2 class="sec" id="disclosures">DISCLOSURES</h2>
   <div class="discl">
+   <div style="border:2px solid var(--green);border-radius:12px;padding:12px 14px;margin-bottom:8px;background:rgba(57,255,136,.07);color:#fff">
+    <b class="g tech" style="letter-spacing:.14em">FOR ENTERTAINMENT PURPOSES ONLY.</b><br>Everything on KJ’s Picks is statistical model output shared for entertainment and information. It is not betting, financial or legal advice, not a recommendation to wager, and never a guarantee. Full details: <a href="#terms">Terms of Use</a> · <a href="#privacy">Privacy Policy</a>.</div>
    <div style="border:2px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:6px;background:rgba(255,210,63,.08);color:#fff">
     <b class="y tech" style="letter-spacing:.14em">KJ’S PICKS IS NOT A SPORTSBOOK OR BOOKIE.</b><br>
     KJ’s Picks does not take bets, set odds for betting, hold or transfer money for wagers, or pay out winnings. Any membership or subscription fee pays <b>only for access to information</b>: the model's predictions, fair lines, analysis and tracking tools. The fee is not a wager. It doesn't depend on any game's outcome, and nothing is won or lost based on results. If you choose to bet, you do so on your own, with a licensed sportsbook where it is legal for you.</div>
@@ -2891,6 +2911,10 @@ function infoHome() {
    <h4>NO GUARANTEES</h4>Sports outcomes are uncertain. Models can be wrong, data can be late or incorrect, and past performance, including backtests, does not guarantee future results. The NFL model currently releases no official picks because it has not beaten the market in out-of-sample testing.
    <h4>RECORD METHODOLOGY</h4>Official picks are recorded once, at release, with the line and odds available then. A pick must be published at least ${D.meta.release_lead || 60} minutes before kickoff to count. It is graded only after the final score is verified. Pushes are not wins or losses, and canceled games are void. Results are shown in units of $${UNIT()}. Owner corrections are logged with a reason rather than deleted.
    <h4>RESPONSIBLE GAMING</h4>You must be 21 or older (or the legal age where you live) and in a jurisdiction where sports betting is legal. Only bet what you can afford to lose. If gambling stops being fun, call or text <b>1-800-GAMBLER</b> or visit ncpgambling.org.
+   <h4>YOUR RESPONSIBILITY AND LOCAL LAW</h4>Whether and how sports betting is legal depends on where you are. You alone are responsible for following the laws that apply to you. KJ’s Picks is void where prohibited.
+   <h4>AI AGENT AND PERSONAL MODELS</h4>The KJ’s Picks Agent is an automated AI tool. It can be wrong, and it is not a person or a licensed advisor. Settings and formulas you give it create your own personal picks, which are not official plays and never change the official record.
+   <h4>MEMBERSHIPS</h4>Fees pay only for access to information and tools. They are not wagers and are not refunded based on game results. Passes don't renew; subscriptions renew until cancelled and can be cancelled anytime.
+   <h4>NO LIABILITY FOR LOSSES</h4>KJ’s Picks is provided as is. To the fullest extent allowed by law, KJ’s Picks and its owner are not responsible for any gambling losses or other damages from using the site. See the <a href="#terms">Terms of Use</a>.
    <h4>ODDS AND AVAILABILITY</h4>Odds change constantly and differ by sportsbook and state. Always confirm the current line with your sportsbook before betting.
    <h4>DATA SOURCES AND AFFILIATION</h4>Data comes from CollegeFootballData.com, The Odds API, nflverse, ESPN public feeds, Open-Meteo and conference availability reports. KJ’s Picks is not affiliated with or endorsed by the NCAA, the NFL, ESPN, the AP or any sportsbook. Team names and logos belong to their owners and are used for identification only.
    <h4>PRIVACY</h4>My Card selections and site settings are stored only in your own browser. If you sign up for text alerts, your phone number is used only to send the alerts you choose. It is never shown on the site (only its last 4 digits, to you), never sold or shared, and you can remove it anytime in MY ALERTS or by replying STOP.
@@ -3443,7 +3467,7 @@ function withTrack(cardHtml, meta) { const i = cardHtml.lastIndexOf("</div>"); r
 /* ================= TEXT ALERTS (opt-in, verified phones only, OFFICIAL picks only) =================
    The page never sees a full phone number or a verification code: the "alerts" Edge Function does the texting and
    the database only lets members read their own last 4 digits. */
-const ALERT_CONSENT = "I agree to receive automated text messages from KJ’s Picks when the model releases an OFFICIAL pick (and any optional alerts I turn on). Message frequency varies. Msg & data rates may apply. Reply STOP to cancel, HELP for help. Consent is not a condition of membership.";
+const ALERT_CONSENT = "I agree to receive automated text messages from KJ’s Picks when the model releases an OFFICIAL pick (and any optional alerts I turn on). Alerts are for entertainment purposes only, not betting advice. Message frequency varies. Msg & data rates may apply. Reply STOP to cancel, HELP for help. Consent is not a condition of membership. I am 21 or older.";
 const ALERT_NAMES = {NEW_PICK: "NEW OFFICIAL PICK", LINE_MOVED: "LINE MOVED", EDGE_LOST: "EDGE LOST", STARTING_SOON: "STARTING SOON", FINAL_RESULT: "FINAL RESULT"};
 const ALERT_PREFS = [["ncaa_official_picks", "🎓 NCAA OFFICIAL PICKS", "A text when the model releases a new official college football pick"],
   ["nfl_official_picks", "🏈 NFL OFFICIAL PICKS", "A text when the model releases a new official NFL pick"],
@@ -3487,7 +3511,7 @@ function alertSignupHTML() {
       <input class="al-in" id="al_codein" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></label>
      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="al-btn gold" id="al_verify" style="grid-column:auto">VERIFY</button><button class="btn ghost" id="al_back">USE A DIFFERENT NUMBER</button></div></div>
     <div class="al-msg" id="al_msg"></div>
-    <div class="al-fine">Official model plays only. Nothing is sent until your number is verified, and you are never signed up automatically. Reply STOP to any text, or turn alerts off in MY ALERTS.</div></div>`;
+    <div class="al-fine">Official model plays only, for entertainment purposes only. Nothing is sent until your number is verified, and you are never signed up automatically. Msg & data rates may apply. Reply STOP to any text, or turn alerts off in MY ALERTS. <a href="#terms">Terms</a> · <a href="#privacy">Privacy</a></div></div>`;
 }
 function wireAlertSignup(after) {
   const send = $("#al_send"); if (!send) return;
@@ -3993,7 +4017,7 @@ function agentView() {
      <div class="ag-sugg">${AG_SUGGEST.map(s => `<button data-agq="${esc(s)}">${esc(s)}</button>`).join("")}</div>
      <form class="ag-in" id="agForm"><textarea id="agText" rows="2" maxlength="2000" placeholder="Ask about any game, a parlay, or change your model…"></textarea><button class="btn green" type="submit">SEND</button></form>
      <div class="ag-foot"><span id="agUsage" class="tiny muted"></span><button class="btn ghost" id="agClear" style="padding:3px 10px">NEW CHAT</button></div>
-     <div class="tiny muted" style="margin-top:4px">Information only, not betting advice. The agent can be wrong; check the line with your sportsbook. 21+. 1-800-GAMBLER.</div>
+     <div class="tiny muted" style="margin-top:4px">For entertainment purposes only. Not betting advice. The agent is an AI and can be wrong; always check the line with your sportsbook. 21+. 1-800-GAMBLER.</div>
     </section>
     <aside class="ag-side" id="agSideBox">
      <div class="panel ag-p ag-picks"><h3>🎯 MY PICKS RIGHT NOW <small>bets that pass your settings · best per game</small></h3><div id="agPicks"></div></div>
@@ -4057,7 +4081,7 @@ function unitModal(force) {
   m.innerHTML = `<div class="sheet unit-sheet"><button class="close" aria-label="Close">×</button>
    <div class="tech tiny" style="color:var(--green);letter-spacing:.3em">SET UP YOUR ACCOUNT</div>
    <h2 id="unitTtl">WHAT'S YOUR UNIT SIZE?</h2>
-   <p>A <b>unit</b> is your standard bet size. KJ’s Picks sizes every pick in units (<b>1u</b>, <b>1.5u</b>, <b>0.5u</b>…) so every member can follow the same plays at their own stakes. Pros usually make one unit <b>1–2% of their betting bankroll</b>, so a cold streak never wipes them out.</p>
+   <p>A <b>unit</b> is your standard bet size. KJ’s Picks sizes every pick in units (<b>1u</b>, <b>1.5u</b>, <b>0.5u</b>…) so every member can follow the same plays at their own stakes. A common guideline is to keep one unit around <b>1–2% of money you can afford to lose</b>, so a cold streak never wipes you out. Only ever use money you can afford to lose.</p>
    <div class="unit-calc"><label>MY BANKROLL (optional)<input id="unitBank" type="number" min="0" step="50" placeholder="$1,000"></label><div id="unitSug" class="tiny muted">Enter a bankroll to see a suggested unit.</div></div>
    <label class="unit-in">ONE UNIT = <span>$</span><input id="unitVal" type="number" min="1" step="1" value="${cur}" placeholder="10"></label>
    <div class="unit-chips">${[5, 10, 25, 50, 100, 250].map(v => `<button data-u="${v}">$${v}</button>`).join("")}</div>
@@ -4081,7 +4105,7 @@ function unitModal(force) {
 async function unitBoot() {                 // members: pull their unit from their account; ask once if they have none
   if (LOCKED) return;
   if (agCloud()) { try { if (!AG.loaded) await agLoad(); const u = +(AG.profile.model || {}).unit_usd; if (u > 0 && u !== +LS.get("unitUSD", 0)) { LS.set("unitUSD", u); render(); header(); } } catch (e) {} }
-  setTimeout(() => unitModal(false), 700);
+  if (LS.get("ack21", false)) setTimeout(() => unitModal(false), 700);
 }
 
 /* ---------- membership plans: savings computed from the prices, never typed in ---------- */
@@ -4104,7 +4128,68 @@ function plansView() {
      ${link ? `<a class="plan-go" href="${link}" target="_blank" rel="noopener">${p.best ? "GET THE YEAR" : "CHOOSE"}</a>`
        : user ? `<span class="plan-go off">CHECKOUT COMING SOON</span>` : `<a class="plan-go" href="#" data-auth="signup">${p.best ? "GET THE YEAR" : "CHOOSE"}</a>`}</div>`; };
   return `<div class="plans">${P.map(card).join("")}</div>
-   <div class="tiny muted" style="text-align:center;margin-top:8px">Savings are calculated from the per-week price. KJ’s Picks is not a sportsbook: a membership pays only for access to the model's information, never for a wager. Passes don't renew; subscriptions can be cancelled anytime.</div>`;
+   <div class="tiny muted" style="text-align:center;margin-top:8px">For entertainment purposes only. Savings are calculated from the per-week price. KJ’s Picks is not a sportsbook: a membership pays only for access to the model's information, never for a wager, and is not refunded based on game results. Passes don't renew; subscriptions renew until cancelled and can be cancelled anytime. See the <a href="#terms">Terms of Use</a>.</div>`;
+}
+
+/* ================= LEGAL: entertainment-only notices, 21+ acknowledgment, Terms of Use, Privacy ================= */
+const LEGAL_DATE = "October 7, 2026";
+const legalContact = () => (typeof KJ_AUTH !== "undefined" && KJ_AUTH && KJ_AUTH.contact) ? `<a href="mailto:${esc(KJ_AUTH.contact)}">${esc(KJ_AUTH.contact)}</a>` : "the contact listed in your account area";
+const ENT_LINE = "For entertainment purposes only. Not betting, financial or legal advice. Not a sportsbook: no bets are taken. 21+. Gambling problem? Call 1-800-GAMBLER.";
+function entBar() {
+  return `<div class="ent-bar" role="note"><b>FOR ENTERTAINMENT PURPOSES ONLY</b><span>Not betting advice · Not a sportsbook · No guarantees · 21+ · Gambling problem? 1-800-GAMBLER</span><span class="ent-links"><a href="#terms">Terms</a><a href="#privacy">Privacy</a><a href="#home" data-jump="disclosures">Disclosures</a></span></div>`;
+}
+function ageGate() {                         // first visit: acknowledge 21+ and entertainment-only before anything else
+  if (LS.get("ack21", false) || document.getElementById("ageGate") || /^#(terms|privacy)/.test(location.hash)) return false;
+  const m = document.createElement("div");
+  m.id = "ageGate"; m.className = "modal"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("aria-labelledby", "ageTtl");
+  m.innerHTML = `<div class="sheet age-sheet"><div class="ld-logo" style="font-size:44px">KJ’S PICKS</div>
+   <h2 id="ageTtl">BEFORE YOU ENTER</h2>
+   <ul><li><b>For entertainment purposes only.</b> KJ’s Picks shares statistical model output. Nothing here is betting, financial or legal advice.</li>
+    <li><b>Not a sportsbook.</b> We take no bets and hold no money for wagers. Fees pay only for access to information.</li>
+    <li><b>No guarantees.</b> Models are often wrong. Never bet more than you can afford to lose.</li>
+    <li><b>You must be 21 or older</b> (or the legal age where you live), and you are responsible for following the laws where you are.</li></ul>
+   <div class="cta" style="justify-content:center"><a class="c4" href="#" id="ageYes">I AM 21+ AND AGREE</a><a class="c3" href="https://www.ncpgambling.org" rel="noopener" id="ageNo">I AM UNDER 21</a></div>
+   <div class="tiny muted" style="text-align:center;margin-top:8px">By continuing you agree to the <a href="#terms" id="ageTerms">Terms of Use</a> and <a href="#privacy" id="agePriv">Privacy Policy</a>. Gambling problem? Call or text 1-800-GAMBLER.</div></div>`;
+  document.body.appendChild(m); document.body.style.overflow = "hidden";
+  const done = () => { m.remove(); document.body.style.overflow = ""; };
+  m.querySelector("#ageYes").onclick = e => { e.preventDefault(); LS.set("ack21", true); done(); if (!LOCKED) setTimeout(() => unitModal(false), 300); };
+  m.querySelectorAll("#ageTerms,#agePriv").forEach(a => a.onclick = () => done());
+  setTimeout(() => m.querySelector("#ageYes").focus(), 50);
+  return true;
+}
+function termsView() {
+  return `<div class="legal"><h2 class="sec">TERMS OF USE <small>effective ${LEGAL_DATE}</small></h2>
+   <p class="lead">Plain-language summary: KJ’s Picks is a <b>sports-analytics information and entertainment service</b>. It is not a sportsbook, it is not betting advice, and nothing it publishes is guaranteed. If you bet, that is your own decision and your own risk.</p>
+   <h4>1. Entertainment and information only</h4><p>Everything on KJ’s Picks (official picks, fair lines, probabilities, expected value, confidence scores, records, simulations, the AI Agent, text alerts and every other feature) is statistical model output provided <b>for entertainment and informational purposes only</b>. It is not betting, gambling, financial, investment, tax or legal advice, and it is not a recommendation or solicitation to place any wager.</p>
+   <h4>2. Not a sportsbook</h4><p>KJ’s Picks does not accept, place, broker or settle bets; does not set odds for wagering; and does not hold, transfer or pay out money for wagers. Odds shown come from third-party sportsbooks for comparison only. Any fee you pay is for access to information and software features only. It is not a wager, does not depend on any game’s outcome, and nothing is won or lost based on results.</p>
+   <h4>3. Eligibility and your responsibility</h4><p>You must be at least 21 years old (or the legal age where you live, if higher) to use KJ’s Picks. You are solely responsible for knowing and following the laws that apply to you, including whether sports betting is legal where you are. Do not use KJ’s Picks where doing so is prohibited. Void where prohibited.</p>
+   <h4>4. No guarantees</h4><p>Sports outcomes are uncertain. Models, data feeds and the AI Agent can be wrong, incomplete, late or unavailable. Past performance, records and backtests do not guarantee future results. Lines and odds change constantly; always confirm with your sportsbook before acting on anything. KJ’s Picks is provided <b>“as is” and “as available”</b>, without warranties of any kind, express or implied, including accuracy, fitness for a particular purpose and uninterrupted service.</p>
+   <h4>5. AI Agent and personal models</h4><p>The KJ’s Picks Agent is an automated AI tool. Its answers can be mistaken, and it is not a person, a licensed advisor or a guarantee. Settings, formulas and preferences you give your Agent create <b>your own personal model</b>. Those personal picks are yours, are not official KJ’s Picks plays, and do not affect the official record.</p>
+   <h4>6. Memberships, passes and payments</h4><p>Passes (1-week, 2-week) give access for the stated period and do not renew. Subscriptions (monthly, yearly) renew automatically each period until you cancel; you can cancel anytime and keep access until the end of the period you paid for. Fees are for access to information and are <b>not refunded because of game results</b> or the performance of any pick. Prices may change; changes never apply to a period you already paid for. Payments, if offered, are processed by a third-party payment provider.</p>
+   <h4>7. Your account</h4><p>Keep your login private; you are responsible for activity on your account. Do not share, resell, scrape or redistribute KJ’s Picks content or picks, misuse the AI Agent, or try to access data that isn’t yours. We may suspend or end access for violations of these terms.</p>
+   <h4>8. Text alerts</h4><p>Text alerts are optional and only sent after you verify your number and opt in. Message frequency varies. Message and data rates may apply. Reply STOP to cancel or HELP for help. Alerts are information only and may be delayed or fail to deliver; never rely on an alert being on time.</p>
+   <h4>9. Limitation of liability</h4><p>To the fullest extent allowed by law, KJ’s Picks and its owner are not liable for any losses or damages of any kind, including gambling losses, lost profits, or indirect, incidental or consequential damages, arising from your use of, or reliance on, KJ’s Picks. If liability cannot be excluded, it is limited to the amount you paid KJ’s Picks in the 30 days before the claim.</p>
+   <h4>10. Indemnity</h4><p>You agree to hold KJ’s Picks and its owner harmless from claims, losses and costs arising from your use of the service, your wagering decisions, or your violation of these terms or any law.</p>
+   <h4>11. Third parties and trademarks</h4><p>Data comes from third-party sources that may contain errors. KJ’s Picks is not affiliated with or endorsed by the NCAA, the NFL, any team, conference, league, media outlet or sportsbook. Team names and logos belong to their owners and are used only to identify teams.</p>
+   <h4>12. Changes</h4><p>We may update these terms. The effective date above shows the latest version; continuing to use KJ’s Picks after a change means you accept it.</p>
+   <h4>13. Responsible gaming</h4><p>If gambling stops being fun, stop. Call or text <b>1-800-GAMBLER</b> or visit <a href="https://www.ncpgambling.org" rel="noopener" target="_blank">ncpgambling.org</a>. You can ask us to close your account at any time.</p>
+   <h4>14. Contact</h4><p>Questions about these terms: ${legalContact()}.</p></div>`;
+}
+function privacyView() {
+  return `<div class="legal"><h2 class="sec">PRIVACY POLICY <small>effective ${LEGAL_DATE}</small></h2>
+   <p class="lead">We collect only what the service needs, we never sell your information, and you can ask us to delete it.</p>
+   <h4>What we collect</h4><ul>
+    <li><b>Account:</b> your email, name and membership status (stored with our database provider, Supabase).</li>
+    <li><b>Usage:</b> pages viewed on KJ’s Picks, a random session ID, device type and referring site, to understand traffic. No advertising trackers.</li>
+    <li><b>Text alerts (optional):</b> your phone number and alert choices. Your full number is visible only to the server that sends alerts; the site shows only its last 4 digits. Messages are delivered by our SMS provider.</li>
+    <li><b>AI Agent (members):</b> your personal model settings, saved preferences, tracked picks and chat history are stored with your account. Your chat messages and the betting data the Agent looks up are sent to <b>Anthropic</b>, which provides the AI model, to generate answers.</li>
+    <li><b>Your browser only:</b> My Card, your unit size, display settings and similar preferences are stored on your own device.</li></ul>
+   <h4>How we use it</h4><p>To run your account and membership, send the alerts you chose, power your Agent, keep the service secure, and improve KJ’s Picks. We do not sell or rent personal information, and we don’t use it for third-party advertising.</p>
+   <h4>Sharing</h4><p>Only with the service providers that run KJ’s Picks (database and login, SMS delivery, AI model, payments if offered), and only for those purposes, or when required by law.</p>
+   <h4>Your choices</h4><p>Turn off text alerts anytime (reply STOP or use MY ALERTS), remove your phone number, clear your Agent chat, or ask us to delete your account and data: ${legalContact()}.</p>
+   <h4>Age</h4><p>KJ’s Picks is only for people 21 and older. We do not knowingly collect information from anyone under 21.</p>
+   <h4>Security</h4><p>Access to your data is restricted by account-level security rules, and secrets and full phone numbers never appear in the website’s code. No system is perfectly secure.</p>
+   <h4>Changes</h4><p>We’ll update the effective date above when this policy changes.</p></div>`;
 }
 
 /* ---------- SETTINGS ---------- */
@@ -4129,9 +4214,9 @@ function render() {
   document.documentElement.style.setProperty("--team-rgb", tmT ? teamRgb(tmT, "176,107,255") : "176,107,255");
   nav(); const app = $("#app");
   const gamesV = () => LEAGUE() === "NFL" ? `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>` + nflBoard() : LEAGUE() === "NCAA" ? games() : `<h2 class="sec" style="color:var(--gold)">NFL GAMES</h2>${nflBoard()}<h2 class="sec">NCAA GAMES</h2>` + games();
-  const views = {agent: agentView, settings: settingsView, alerts: alertsView, admin: adminView, optimal: optimalView, quant: quantView, home: infoHome, live: liveView, picks, results: resultsView, props: propsView, games: gamesV, rankings, tool, card,
+  const views = {terms: termsView, privacy: privacyView, agent: agentView, settings: settingsView, alerts: alertsView, admin: adminView, optimal: optimalView, quant: quantView, home: infoHome, live: liveView, picks, results: resultsView, props: propsView, games: gamesV, rankings, tool, card,
     model: () => r.lg === "NFL" ? nflHealthView() : modelView(r.arg), team: () => team(r.arg), dash: () => r.lg === "NFL" ? nflDash() : home()};
-  app.innerHTML = LOCKED && r.v !== "home" ? lockedView() : staleBanner() + (views[r.v] || infoHome)();
+  app.innerHTML = entBar() + (LOCKED && !["home", "terms", "privacy"].includes(r.v) ? lockedView() : staleBanner() + (views[r.v] || infoHome)());
   window.scrollTo(0, 0);
   wire(app);
   if (r.v === "games" && $("#board")) wireBoard();
@@ -4159,7 +4244,7 @@ setInterval(() => document.querySelectorAll("[data-ko]").forEach(el => { const s
   el.textContent = s <= 0 ? "LIVE / FINAL" : `${Math.floor(s / 3600)}h ${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}m ${String(Math.floor(s % 60)).padStart(2, "0")}s`; }), 1000);
 window.addEventListener("hashchange", () => { closeModal(); render(); window.scrollTo(0, 0); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-ticker(); header(); acctMenu(); render(); newPickAlerts(); unitBoot();
+ticker(); header(); acctMenu(); render(); newPickAlerts(); ageGate(); unitBoot();
 })();
 </script>
 </body>
