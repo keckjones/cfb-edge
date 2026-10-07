@@ -965,6 +965,11 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
 .ms-t td{padding:4px;border-top:1px solid rgba(255,255,255,.06)}
 .ms-ins div{margin:4px 0;font:500 14px/1.5 Inter}
 @media (max-width:900px){.ms-tiles{grid-template-columns:repeat(2,1fr)!important}.ms-grid{grid-template-columns:1fr}}
+/* the main OFFICIAL PICKS link: a gold boxed button */
+#side a.it.goldbox{margin:6px 0 8px;padding:10px 12px;border:2px solid var(--gold);border-radius:12px;background:linear-gradient(180deg,rgba(255,210,63,.16),rgba(255,210,63,.05));
+  color:var(--gold);font-weight:900;letter-spacing:.12em;box-shadow:0 0 14px rgba(255,210,63,.35),inset 0 1px 0 rgba(255,255,255,.12)}
+#side a.it.goldbox:hover{background:rgba(255,210,63,.22);box-shadow:0 0 22px rgba(255,210,63,.6);transform:translateX(0)}
+#side a.it.goldbox.on{background:var(--gold);color:#000;box-shadow:0 0 22px rgba(255,210,63,.7)}
 
 /* KJ's Picks legal notices: per-page entertainment-only bar, first-visit 21+ gate, Terms / Privacy pages */
 .ent-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0 2px;padding:7px 12px;border-radius:10px;
@@ -1419,7 +1424,7 @@ function sidebar() {
   const nflOn = nflMarketsOn().length, op = LS.get("sideOpen", {});
   const grp = (key, title, cls, links) => `<details class="sgrp ${cls}" data-sg="${key}" ${(op[key] ?? (base === key)) || base === key ? "open" : ""}><summary>${title}<span class="chev" aria-hidden="true">▾</span></summary>${links}</details>`;
   $("#side").innerHTML = `<a class="logo" href="#home">KJ’S PICKS</a>${kjUserBox()}<a class="side-agent ${h === "#agent" ? "on" : ""}" href="#agent"><i>🤖</i><span>AGENT<small>your AI co-pilot</small></span></a>
-    ${it("#home", "⌂", "HOME")}${it("#picks", "★", "OFFICIAL PICKS", "gold")}${it("#mystats", "📊", "MY DASHBOARD")}${it("#card", "🎟", "MY CARD")}${it("#live", "●", "GAMEDAY LIVE")}${it("#results", "✓", "RESULTS")}
+    ${it("#home", "⌂", "HOME")}${it("#picks", "★", "OFFICIAL PICKS", "gold goldbox")}${it("#mystats", "📊", "MY DASHBOARD")}${it("#card", "🎟", "MY CARD")}${it("#live", "●", "GAMEDAY LIVE")}${it("#results", "✓", "RESULTS")}
     ${grp("nfl", "🏈 NFL", "nfl", it("#nfl", "◆", "NFL DASHBOARD") + it("#nfl/picks", "★", "NFL OFFICIAL PICKS" + (nflOn ? "" : " (OFF)"), "gold") + it("#nfl/games", "▦", "GAMES & FAIR LINES") + it("#nfl/live", "●", "NFL LIVE") + it("#nfl/results", "✓", "NFL RESULTS") + it("#nfl/model", "◉", "NFL MODEL HEALTH"))}
     ${grp("ncaa", "🎓 COLLEGE FOOTBALL", "ncaa", it("#ncaa", "◆", "NCAA DASHBOARD") + it("#ncaa/picks", "★", "NCAA OFFICIAL PICKS", "gold") + it("#ncaa/games", "▦", "GAMES & FAIR LINES") + it("#ncaa/props", "◎", "PLAYER PROPS") + it("#ncaa/live", "●", "NCAA LIVE") + it("#ncaa/rankings", "#", "POWER RANKINGS") + it("#ncaa/tool", "⚔", "WHO WOULD WIN?") + it("#ncaa/results", "✓", "NCAA RESULTS") + it("#ncaa/model", "◉", "NCAA MODEL LAB"))}
     ${grp("lab", "🔬 MODEL & QUANT", "all", it("#quant", "◈", "QUANT ENGINE") + it("#optimal", "◇", "OPTIMAL CARD (SHADOW)"))}
