@@ -922,6 +922,7 @@ html[data-theme-league="TEAM"] .g-team{opacity:1}
 .agc{padding:10px 12px;border-radius:12px;background:#07040f;border:1px solid rgba(255,159,46,.55);box-shadow:0 6px 16px rgba(0,0,0,.45)}
 .agc.official{border-color:var(--gold);box-shadow:0 0 16px rgba(255,210,63,.25)}
 .agc.parlay{border-color:rgba(255,46,136,.6)}
+.agc.ask{display:flex;gap:8px;flex-wrap:wrap;border-color:rgba(57,255,136,.45)}.agc.ask .btn{min-width:84px}
 .agc-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.agc-top .tiny{margin-left:auto}
 .agc-pick{font:400 24px/1.05 var(--disp);letter-spacing:.04em;color:#fff;margin-top:6px}
 .agc-why{margin:6px 0;font:500 13px/1.45 Inter;color:#e6e0f5}.agc-why b{color:var(--ag);font:900 10px var(--tech);letter-spacing:.12em}
@@ -3768,7 +3769,8 @@ function agGame(g, lg, M) {
     const sgn = b.market === "Total" ? (b.side === "over" ? 1 : -1) : (b.side === "home" ? 1 : -1);
     const shift = b.market === "Total" ? dt / st : dm / sm;
     const p = Phi(base * (M.sigma_mult === 1 ? 1 : 1 / M.sigma_mult) + sgn * shift);
-    const push = b.push || 0, d = dec(b.price), ev = p * (d - 1) - Math.max(0, 1 - p - push);
+    const push = b.push || 0, d = dec(b.price), evAt = q => q * (d - 1) - Math.max(0, 1 - q - push);
+    const ev = b.ev != null ? b.ev + evAt(p) - evAt(b.p) : evAt(p);      // start from the model's exact EV (it includes push odds), then apply the member's shift
     const fav = b.market === "Total" ? null : (b.market === "Moneyline" ? b.price < 0 : b.point < 0);
     const why = [];
     if (!M.leagues.includes(lg)) why.push(`${lg} is off in your model`);
@@ -3982,7 +3984,13 @@ function agTeamIndex() {
   const add = (name, ref) => { if (name && String(name).length >= 2) ix.push([String(name).toLowerCase(), ref]); };
   Object.keys(T).forEach(s => add(s, {school: s, lg: "NCAA"}));
   D.games.forEach(g => { add(g.home_name, {school: g.home.school, lg: "NCAA"}); add(g.away_name, {school: g.away.school, lg: "NCAA"}); });
-  NFLG.forEach(g => [g.home, g.away].forEach(t => { add(t.school, {school: t.school, lg: "NFL"}); add(t.nick, {school: t.school, lg: "NFL"}); }));
+  NFLG.forEach(g => [g.home, g.away].forEach(t => { add(t.school, {school: t.school, lg: "NFL"}); add(t.nick, {school: t.school, lg: "NFL"}); add(String(t.school).split(" ").pop(), {school: t.school, lg: "NFL"}); }));
+  const masc = {};                                            // "Aggies", "Buckeyes"... only when exactly one team on the board uses it
+  D.games.forEach(g => [[g.home_name, g.home.school], [g.away_name, g.away.school]].forEach(([full, sc]) => { const m = String(full || "").slice(String(sc).length).trim().toLowerCase();
+    if (m.length >= 4) (masc[m] = masc[m] || new Set()).add(sc); }));
+  Object.entries(masc).forEach(([m, set]) => { if (set.size === 1) add(m, {school: [...set][0], lg: "NCAA"}); });
+  Object.entries(AG_ALIAS).forEach(([a, sc]) => { if (T[sc] || D.games.some(g => g.home.school === sc || g.away.school === sc)) add(a, {school: sc, lg: "NCAA"});
+    else if (NFLG.some(g => g.home.school === sc || g.away.school === sc)) add(a, {school: sc, lg: "NFL"}); });
   return ix.sort((a, b) => b[0].length - a[0].length);
 }
 function agTeamsIn(text) {
@@ -4016,12 +4024,101 @@ function agLeagueIn(t) { return /\bnfl\b|pro football/.test(t) ? "NFL" : /\bncaa
 function agPickLines(list) {
   return list.map(({g, lg, b}) => `- **${b.label}** ${odds(b.price)} (${lg}) · ${b.status === "official" ? "★ official play" : "not official"} · EV ${spct(b.my_ev ?? b.ev)}`).join("\n");
 }
+/* ---------- free mode, in depth: every bet in one game (spread, total, moneyline AND player props) ---------- */
+// Nicknames members actually type. Only used when that school/team is on this week's board.
+const AG_ALIAS = {tamu: "Texas A&M", "a&m": "Texas A&M", "texas am": "Texas A&M", "texas a and m": "Texas A&M", bama: "Alabama", uga: "Georgia", dawgs: "Georgia",
+  ou: "Oklahoma", sooners: "Oklahoma", longhorns: "Texas", horns: "Texas", osu: "Ohio State", buckeyes: "Ohio State", psu: "Penn State", nd: "Notre Dame", irish: "Notre Dame",
+  fsu: "Florida State", noles: "Florida State", mizzou: "Missouri", "ole miss": "Ole Miss", unc: "North Carolina", uva: "Virginia", vt: "Virginia Tech", gt: "Georgia Tech",
+  uk: "Kentucky", cuse: "Syracuse", wazzu: "Washington State", huskers: "Nebraska", vols: "Tennessee", gators: "Florida", hogs: "Arkansas", cocks: "South Carolina",
+  gamecocks: "South Carolina", "the u": "Miami", canes: "Miami", niners: "San Francisco 49ers", pats: "New England Patriots", bucs: "Tampa Bay Buccaneers",
+  jags: "Jacksonville Jaguars"};
+function agNorm(text) {                    // common typos so "whats the bes tamu bet" still works
+  return String(text || "").replace(/\bbes\b|\bbset\b|\bbst\b|\bbestt\b/gi, "best").replace(/\bparl[ae]y?s?\b|\bparlee\b|\bparly\b/gi, m => /s$/i.test(m) ? "parlays" : "parlay")
+    .replace(/\btexas a ?and ?m\b/gi, "Texas A&M").replace(/\ba and m\b/gi, "A&M");
+}
+const confWord = c => c == null ? "unrated" : c >= 70 ? "high" : c >= 50 ? "medium" : "low";
+const confTxt = c => c == null ? "confidence –" : `confidence **${c}/100** (${confWord(c)})`;
+function agProps(gid) {                    // the model's priced player props for one game (NCAA)
+  const P = D.player_props || {}; if (!P.refreshed) return [];
+  const off = P.qualifying || [];
+  const seen = new Set();
+  return [...off, ...(P.leans || []), ...(P.near || [])].filter(x => String(x.gid) === String(gid) && new Date(x.kickoff) > Date.now())
+    .filter(x => { const k = x.player + "|" + x.stat + "|" + x.side; if (seen.has(k)) return false; seen.add(k); return true; })
+    .map(x => ({kind: "prop", label: propLabel(x), market: "Player prop", price: x.price, book: x.book, p: x.p, ev: x.ev, my_p: x.p, my_ev: x.ev, conf: x.conf ?? null,
+      official: off.includes(x), fails: off.includes(x) ? [] : ((x.checks || []).filter(c => c.required && !c.ok).map(c => `${c.name}${c.value ? ` (${c.value}${c.need ? `, needs ${c.need}` : ""})` : ""}`).slice(0, 4).concat(x.fail && !(x.checks || []).length ? [x.fail] : [])),
+      key: x.player + "|" + x.stat, team: x.team, pp: x}));
+}
+function agGameOptions(g, lg) {            // every priced bet in a game, one shape for lines and props
+  const lines = agGame(g, lg).bets.map(b => ({kind: "line", label: b.label, market: b.market, price: b.price, book: b.book, p: b.p, ev: b.ev, my_p: b.my_p, my_ev: b.my_ev, conf: b.conf ?? null,
+    official: b.status === "official", fails: b.status === "official" ? [] : agFailed(b).slice(0, 4), key: b.market === "Total" ? "total" : "side", side: b.side, b}));
+  return lines.concat(lg === "NCAA" ? agProps(g.id) : []).filter(o => o.price != null && o.p != null);
+}
+const agScore = o => (o.my_ev ?? o.ev ?? -1);
+function agOptLine(o) { return `- **${o.label}** ${odds(o.price)} · ${o.market} · win ${pct(o.my_p ?? o.p)} · EV ${spct(o.my_ev ?? o.ev)} · ${confTxt(o.conf)} · ${o.official ? "★ official play" : "not official"}`; }
+function agPropSnap(g, o) {
+  const x = o.pp;
+  return {kind: "prop", game_id: String(g.id), lg: "NCAA", label: o.label, matchup: `${g.away.school} @ ${g.home.school}`, kickoff: g.kickoff, market: "Player prop", odds: o.price, book: o.book,
+    model_p: o.p, ev: o.ev, conf: o.conf, my_p: o.p, my_ev: o.ev, official: o.official, fails: o.fails, proj: x.proj, line: x.line, side: x.side, player: x.player, prop: x.prop};
+}
+function agOptSnap(g, lg, o) { return o.kind === "prop" ? agPropSnap(g, o) : agSnap(g, lg, o.b); }
+function agOptReason(g, lg, o) {
+  if (o.kind === "prop") { const x = o.pp; return `The model projects ${x.player} for ${num(x.proj)} ${String(x.prop).toLowerCase()} vs a line of ${x.line} (${sgn((x.proj - x.line) * (x.side === "over" ? 1 : -1))} toward the ${x.side}), from ${x.games} games of data. Win chance ${pct(x.p)}, EV ${spct(x.ev)}, ${confTxt(x.conf).replace(/\*/g, "")}.`; }
+  return agReason(g, lg, o.b);
+}
+function agTeamBest(team) {
+  const f = agGameOf(team); if (!f) return {text: `${esc(team.school)} isn't on this week's board.`};
+  const {g, lg} = f, opts = agGameOptions(g, lg).sort((a, b) => agScore(b) - agScore(a));
+  if (!opts.length) return {text: `There are no priced bets yet for **${g.away.school} @ ${g.home.school}**. Lines and props get pulled during the week.`};
+  const top = opts[0], mine = s => s.includes(team.school) || (g.home.school === team.school ? s.includes(g.home_name || "@@") : s.includes(g.away_name || "@@"));
+  const onTeam = opts.filter(o => o.kind === "prop" ? o.team === team.school : o.market !== "Total" && mine(o.label));
+  const best4team = onTeam[0];
+  AG_CARDS.push({...agOptSnap(g, lg, top), kind: top.kind === "prop" ? "prop" : "single", reason: agOptReason(g, lg, top).slice(0, 400), at: new Date().toISOString()});
+  if (best4team && best4team !== top) AG_CARDS.push({...agOptSnap(g, lg, best4team), kind: best4team.kind === "prop" ? "prop" : "single", reason: agOptReason(g, lg, best4team).slice(0, 400), at: new Date().toISOString()});
+  const P = D.player_props || {}, nProps = opts.filter(o => o.kind === "prop").length;
+  const propNote = lg === "NFL" ? "" : !P.refreshed ? `\n\n_Player props aren't priced yet this week. ${esc(P.schedule || "")}_` : nProps ? "" : "\n\n_No player props with a model price for this game._";
+  return {text: `**Best bet in ${g.away.school} @ ${g.home.school}** (${fmtTime(g.kickoff)}), out of ${opts.length} priced bets (spread, total, moneyline${lg === "NCAA" ? " and player props" : ""}):\n${agOptLine(top)}\n\n**Why:** ${agOptReason(g, lg, top)}${best4team && best4team !== top ? `\n\n**Best bet on ${team.school} itself:**\n${agOptLine(best4team)}` : ""}\n\n**Other options in this game:**\n${opts.slice(1, 6).filter(o => o !== best4team).map(agOptLine).join("\n") || "- none"}\n\n${top.official ? "The top bet is an **official play**." : "**The top bet is NOT an official play**: it didn't pass every KJ’s Picks check, so it may not be a good bet. The card shows exactly which checks it missed."}${top.ev != null && top.ev <= 0 ? " Every bet in this game has negative EV right now: the model's best answer here is to **pass**." : ""}\n\nConfidence (0–100) is the model's trust in its own number: version agreement, sample size, data quality and backtests. 70+ high, 50–69 medium, under 50 low.${propNote}\n\n${ENT}`};
+}
+function agParlayPick(opts, n) {          // best legs from one game without contradicting itself
+  const used = new Set(), legs = [];
+  for (const o of opts) { if (legs.length >= n) break;
+    const k = o.kind === "prop" ? "prop:" + o.key : o.key;    // one side bet (spread OR moneyline), one total, one bet per player stat
+    if (used.has(k)) continue; used.add(k); legs.push(o); }
+  return legs;
+}
+function agSgp(g, lg, n) {
+  const opts = agGameOptions(g, lg).sort((a, b) => agScore(b) - agScore(a)), legs = agParlayPick(opts, n);
+  const P = D.player_props || {};
+  if (legs.length < 2) return {text: `Only ${legs.length} usable bet${legs.length === 1 ? "" : "s"} in **${g.away.school} @ ${g.home.school}** right now, so there's no parlay to build.${lg === "NCAA" && !P.refreshed ? ` Player props aren't priced yet. ${esc(P.schedule || "")}` : ""}`};
+  const d = legs.reduce((a, o) => a * dec(o.price), 1), pr = legs.reduce((a, o) => a * (o.my_p ?? o.p), 1), ev = pr * d - 1;
+  const confs = legs.map(o => o.conf).filter(c => c != null), cmin = confs.length ? Math.min(...confs) : null, cavg = confs.length ? Math.round(confs.reduce((a, c) => a + c, 0) / confs.length) : null;
+  const warnings = ["Same-game legs are linked (a team covering and the total going over can move together), so the true chance differs from the simple product shown", "Sportsbooks price same-game parlays with extra margin: the payout offered is usually below these combined odds"];
+  if (legs.some(o => agScore(o) < 0)) warnings.push("At least one leg has negative EV on its own");
+  AG_CARDS.push({kind: "parlay", sgp: true, reason: `The ${legs.length} strongest bets in ${g.away.school} @ ${g.home.school} that don't contradict each other (at most one side bet, one total, one bet per player stat).`,
+    at: new Date().toISOString(), legs: legs.map(o => agOptSnap(g, lg, o)), combined_odds: amer(d), my_p: pr, my_ev: ev, stake_units: agModel().unit_size || 1, warnings, conf_min: cmin, conf_avg: cavg});
+  const short = legs.length < n ? `\n_This game only has ${legs.length} non-conflicting priced bets, so I stopped at ${legs.length} legs._` : "";
+  return {text: `**${legs.length}-leg same-game parlay: ${g.away.school} @ ${g.home.school}**\n${legs.map(agOptLine).join("\n")}\n\nCombined odds **${odds(amer(d))}** · win chance **${pct(pr)}** (if the legs were independent) · EV **${spct(ev)}**\nParlay confidence: **${cmin ?? "–"}/100 (${confWord(cmin)})**, set by its weakest leg (average leg confidence ${cavg ?? "–"}).${short}\n\n**Not an official play:** parlays never are, and same-game parlays are priced with extra sportsbook margin. ${ENT}`};
+}
+function agLegsIn(t) { const m = t.match(/\b(\d|two|three|four|five|six)\s*-?\s*(legs?|team|picks?)\b/) || t.match(/^\s*(\d|two|three|four|five|six)\s*[.!]?\s*$/); return m ? Math.max(2, Math.min(8, agWords[m[1]] || +m[1])) : null; }
+function agAskLegs(g, lg) {
+  const n = agParlayPick(agGameOptions(g, lg).sort((a, b) => agScore(b) - agScore(a)), 8).length;
+  if (n < 2) return agSgp(g, lg, 2);
+  AG.pending = {kind: "sgp", gid: String(g.id), lg};
+  AG_CARDS.push({kind: "ask", gid: String(g.id), lg, at: new Date().toISOString(), options: Array.from({length: Math.min(6, n) - 1}, (_, i) => `${i + 2} legs`)});
+  return {text: `Building a same-game parlay for **${g.away.school} @ ${g.home.school}**. **How many legs would you like?** This game has ${n} bets that can go together${lg === "NCAA" && !(D.player_props || {}).refreshed ? " (player props aren't priced yet this week)" : ""}. Tap a number below or type it.`};
+}
 async function agFree(text) {
+  text = agNorm(text);
   const t = text.toLowerCase().trim(), L = agLeagueIn(t), M = agModel();
   const say = s => ({text: s});
+  // answering "how many legs?" (from the question just asked, or the last ask card in the chat)
+  const lastAsk = (() => { for (let i = AG.msgs.length - 1; i >= 0; i--) { const m = AG.msgs[i]; if (m.role !== "assistant") continue; if (m.local) continue;
+    const c = (m.cards || []).find(x => x.kind === "ask"); return c ? {gid: c.gid, lg: c.lg} : null; } return null; })();
+  const pend = AG.pending || lastAsk; AG.pending = null;
+  if (pend && pend.gid && !/parlay/.test(t) || pend && pend.gid && /^\s*(\d|two|three|four|five|six)\s*-?\s*legs?/.test(t)) { const n = agLegsIn(t); const f = n && agFind(pend.gid); if (f) return agSgp(f.g, f.lg, n); }
   // ---------------- learning / help
   if (/^(help|hi|hey|hello|what can you do|commands?)\b/.test(t))
-    return say(`I'm your KJ’s Picks Agent (free mode). I can:\n- Find the **best bets** (\"best NFL bet\", \"best underdog this week\")\n- Build and price **parlays** (\"build a 3-leg parlay that pays at least +400\")\n- **Break down a game** (\"break down Georgia vs Alabama\")\n- **Change your model** (\"only show me unders\", \"give Texas A&M +2 points\", \"blend 25% toward the market\", \"make my model more cautious\", \"reset my model\")\n- Show **your record** and explain the numbers (\"what does EV mean?\")`);
+    return say(`I'm your KJ’s Picks Agent (free mode). I can:\n- Find the **best bets** (\"best NFL bet\", \"best underdog this week\", \"what's the best tamu bet?\": every bet type in that game, props included, with confidence)
+- Build a **same-game parlay** (\"give me a parlay for the Georgia game\"; I'll ask how many legs)\n- Build and price **parlays** (\"build a 3-leg parlay that pays at least +400\")\n- **Break down a game** (\"break down Georgia vs Alabama\")\n- **Change your model** (\"only show me unders\", \"give Texas A&M +2 points\", \"blend 25% toward the market\", \"make my model more cautious\", \"reset my model\")\n- Show **your record** and explain the numbers (\"what does EV mean?\")`);
   if (/what('?s| is| does)? (an? )?ev\b|expected value/.test(t)) return say("**EV (expected value)** is the average profit per $1 if the model's probability is right, after the sportsbook's cut. +5% EV means an average of 5 cents per $1 over many bets. It's an average, not a promise: any single bet can lose.");
   if (/what('?s| is)? (a |the )?unit|how big should my unit/.test(t)) return say(`A **unit** is your standard bet size. Picks are sized in units so everyone can follow at their own stakes. A common guideline is about 1–2% of money you can afford to lose. Yours is **$${num(UNIT(), UNIT() % 1 ? 2 : 0)}**; change it by saying \"set my unit to $25\" or in Settings.`);
   if (/fair line/.test(t) && /what/.test(t)) return say("The **fair line** is the spread or total KJ’s Picks thinks is correct, built from team strength, matchups, injuries, weather and more. The **edge** is how far the sportsbook's line is from it.");
@@ -4081,6 +4178,19 @@ async function agFree(text) {
     let v = agNum(ptsM[1]); if (/take|lower|subtract|minus|worse|weaker/.test(t)) v = -Math.abs(v);
     return change({team_adj: {[teams[0].school]: v}}, `${teams[0].school} ${sgn(v)} pts`, ` ${teams[0].school} is now rated ${sgn(v)} points ${v >= 0 ? "better" : "worse"} in your model.`); }
   if (/(remember|i (like|love|prefer|hate|avoid|never|always))/.test(t)) { await AGT.remember_preference({note: text.slice(0, 300)}); return say(`Got it, I'll remember that: \"${esc(text.slice(0, 120))}\". It's saved under MY MODEL → What my agent remembers.`); }
+  // ---------------- one team's game: parlays and the best bet of every type
+  if (/parlay/.test(t) && teams.length) {
+    const games = []; teams.forEach(tm => { const f = agGameOf(tm); if (f && !games.some(x => String(x.g.id) === String(f.g.id))) games.push(f); });
+    if (!games.length) return say(`${esc(teams[0].school)} isn't on this week's board.`);
+    if (games.length === 1) { const n = agLegsIn(t); return n ? agSgp(games[0].g, games[0].lg, n) : agAskLegs(games[0].g, games[0].lg); }
+    const legs = games.slice(0, 6).map(({g, lg}) => ({g, lg, o: agGameOptions(g, lg).sort((a, b) => agScore(b) - agScore(a))[0]})).filter(x => x.o);
+    if (legs.length < 2) return say("I couldn't find priced bets in at least two of those games.");
+    const d = legs.reduce((a, x) => a * dec(x.o.price), 1), pr = legs.reduce((a, x) => a * (x.o.my_p ?? x.o.p), 1), confs = legs.map(x => x.o.conf).filter(c => c != null), cmin = confs.length ? Math.min(...confs) : null;
+    AG_CARDS.push({kind: "parlay", reason: "The best-priced bet from each game you named.", at: new Date().toISOString(), legs: legs.map(x => agOptSnap(x.g, x.lg, x.o)), combined_odds: amer(d), my_p: pr, my_ev: pr * d - 1,
+      stake_units: M.unit_size || 1, warnings: legs.some(x => agScore(x.o) < 0) ? ["At least one leg has negative EV on its own"] : [], conf_min: cmin});
+    return say(`**${legs.length}-leg parlay**, the best bet from each game:\n${legs.map(x => agOptLine(x.o)).join("\n")}\n\nCombined odds **${odds(amer(d))}** · win chance **${pct(pr)}** · EV **${spct(pr * d - 1)}** · parlay confidence **${cmin ?? "–"}/100 (${confWord(cmin)})**, set by its weakest leg.\n\n**Not an official play:** parlays never are. ${ENT}`);
+  }
+  if (teams.length && /best|top|\bbets?\b|\bplay\b|pick|recommend|take|should i|value|edge|worth/.test(t) && !/official|break ?down|preview|analy/.test(t)) return agTeamBest(teams[0]);
   // ---------------- official plays
   if (/official/.test(t)) {
     const o = AGT.get_official_picks(), open = o.open.filter(r => L === "ALL" || r.league === L);
@@ -4212,8 +4322,15 @@ function agAddToCard(gid, label) {
   if (!agOnCard(e)) { c.push(e); LS.set("card", c); nav(); }
   return true;
 }
+function agPropEntry(l) {
+  const P = D.player_props || {}, pp = [...(P.qualifying || []), ...(P.leans || []), ...(P.near || [])].find(x => String(x.gid) === String(l.game_id) && propLabel(x) === l.label);
+  if (!pp) return null;
+  return {gid: String(l.game_id), label: l.label, units: 1, price: pp.price, point: pp.line, odds: pp.price, added: new Date().toISOString(), stake: UNIT(), ev: pp.ev ?? null, conf: pp.conf ?? null,
+    edge: +((pp.side === "over" ? 1 : -1) * (pp.proj - pp.line)).toFixed(1), game: l.matchup, type: "prop", player: pp.player, stat: pp.stat, side: pp.side, line: pp.line, team: pp.team, proj: pp.proj,
+    official: (P.qualifying || []).includes(pp)};
+}
 function agAddParlayToCard(card) {
-  const legs = card.legs.map(l => { const f = agFind(l.game_id); const b = f && agGame(f.g, f.lg).bets.find(x => x.label === l.label); return b ? agCardEntry(f.g, f.lg, b, 1) : null; });
+  const legs = card.legs.map(l => { if (l.kind === "prop") return agPropEntry(l); const f = agFind(l.game_id); const b = f && agGame(f.g, f.lg).bets.find(x => x.label === l.label); return b ? agCardEntry(f.g, f.lg, b, 1) : null; });
   if (legs.some(x => !x)) return false;
   const P = LS.get("parlays", []), key = legs.map(l => l.gid + l.label).join("|");
   if (!P.some(p => p.legs.map(l => l.gid + l.label).join("|") === key)) { P.push({stake: (card.stake_units || 1) * UNIT(), created: new Date().toISOString(), legs: legs.map(l => ({...l, odds: l.price}))}); LS.set("parlays", P); nav(); }
@@ -4237,17 +4354,27 @@ function agShow({picks = [], parlays = []} = {}) {
 }
 function agCardHTML(c, mi, ci) {
   const id = `${mi}-${ci}`;
+  if (c.kind === "ask") return `<div class="agc ask">${c.options.map(o => `<button class="btn" data-agq="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+  if (c.kind === "prop") {
+    const on = LS.get("card", []).some(x => x.gid === c.game_id && x.label === c.label), started = new Date(c.kickoff) <= Date.now();
+    return `<div class="agc ${c.official ? "official" : ""}"><div class="agc-top">${lgBadge("NCAA")}<span class="chip">🎯 PLAYER PROP</span>${c.official ? '<span class="chip official">★ OFFICIAL KJ’S PICKS PLAY</span>' : '<span class="chip warn">NOT OFFICIAL</span>'}<span class="tiny muted">${esc(fmtTime(c.kickoff))}</span></div>
+     <div class="agc-pick">${esc(c.label)} <span class="muted">${odds(c.odds)}</span></div><div class="tiny muted">${esc(c.matchup)}${c.book ? " · best price at " + esc(c.book) : ""}</div>
+     ${c.reason ? `<div class="agc-why"><b>WHY:</b> ${esc(c.reason)}</div>` : ""}
+     ${c.official ? "" : `<div class="agc-warn">⚠ <b>NOT AN OFFICIAL PICK.</b> It did not pass every KJ’s Picks prop check, so it may not be a good bet:${(c.fails || []).length ? `<ul>${c.fails.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}</div>`}
+     <div class="agc-stats"><span>MODEL WIN %<b>${pct(c.model_p)}</b></span><span>EV<b class="${clsv(c.ev)}">${spct(c.ev)}</b></span><span>CONFIDENCE<b style="color:${confColor(c.conf)}">${c.conf ?? "–"}</b></span><span>PROJECTION<b>${num(c.proj)}</b></span></div>
+     <div class="agc-act">${started ? '<span class="tiny muted">Game started; can no longer be added.</span>' : `<button class="btn green" data-add="${esc(c.game_id)}" data-label="${esc(c.label)}" data-units="1">${on ? "✓ ON MY CARD" : "+ ADD TO MY CARD"}</button><button class="btn ghost" data-agopen="${esc(c.game_id)}">OPEN MATCHUP</button>`}</div></div>`;
+  }
   const warn = (txt, fails) => `<div class="agc-warn">⚠ <b>NOT AN OFFICIAL PICK.</b> ${txt}${fails && fails.length ? `<ul>${fails.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}</div>`;
   if (c.kind === "parlay") {
     const on = LS.get("parlays", []).some(p => p.legs.map(l => l.label).join("|") === c.legs.map(l => l.label).join("|"));
-    return `<div class="agc parlay" data-agc="${id}"><div class="agc-top"><span class="chip">🧩 ${c.legs.length}-LEG PARLAY</span><span class="mono">${odds(c.combined_odds)}</span></div>
+    return `<div class="agc parlay" data-agc="${id}"><div class="agc-top"><span class="chip">🧩 ${c.legs.length}-LEG ${c.sgp ? "SAME-GAME " : ""}PARLAY</span><span class="mono">${odds(c.combined_odds)}</span></div>
      ${c.reason ? `<div class="agc-why"><b>WHY:</b> ${esc(c.reason)}</div>` : ""}
      ${warn("Parlays are never official KJ’s Picks plays. Each leg's edge is multiplied against the sportsbook's margin, so this may not be a good bet.", [])}
-     <div class="agc-legs">${c.legs.map(l => `<div>${lgBadge(l.lg)} <b>${esc(l.label)}</b> <span class="muted">${odds(l.odds)}</span> ${l.official ? '<span class="chip official">★ OFFICIAL</span>' : '<span class="chip warn">NOT OFFICIAL</span>'}</div>`).join("")}</div>
-     <div class="agc-stats"><span>YOUR WIN %<b>${pct(c.my_p)}</b></span><span>YOUR EV<b class="${clsv(c.my_ev)}">${spct(c.my_ev)}</b></span><span>TO WIN<b>$${num((c.stake_units || 1) * UNIT() * (dec(c.combined_odds) - 1), 2)}</b></span></div>
+     <div class="agc-legs">${c.legs.map(l => `<div>${lgBadge(l.lg)} <b>${esc(l.label)}</b> <span class="muted">${odds(l.odds)}</span> <span class="tiny" style="color:${confColor(l.conf)}">conf ${l.conf ?? "–"}</span> ${l.official ? '<span class="chip official">★ OFFICIAL</span>' : '<span class="chip warn">NOT OFFICIAL</span>'}</div>`).join("")}</div>
+     <div class="agc-stats"><span>YOUR WIN %<b>${pct(c.my_p)}</b></span><span>YOUR EV<b class="${clsv(c.my_ev)}">${spct(c.my_ev)}</b></span><span>CONFIDENCE<b style="color:${confColor(c.conf_min ?? Math.min(...c.legs.map(l => l.conf ?? 100)))}">${c.conf_min ?? (c.legs.every(l => l.conf == null) ? "–" : Math.min(...c.legs.map(l => l.conf ?? 100)))}</b></span><span>TO WIN<b>$${num((c.stake_units || 1) * UNIT() * (dec(c.combined_odds) - 1), 2)}</b></span></div>
      ${(c.warnings || []).length ? `<div class="tiny" style="color:var(--orange)">${c.warnings.map(esc).join(" · ")}</div>` : ""}
      <details class="agc-det"><summary>DETAILS</summary><div>${c.legs.map(l => `<div class="agc-leg"><b>${esc(l.label)}</b> · ${esc(l.matchup)} · ${esc(fmtTime(l.kickoff))}<br>model ${pct(l.model_p)} · EV ${spct(l.ev)} · conf ${l.conf ?? "–"}${l.fails.length ? `<div class="tiny" style="color:var(--orange)">Failed: ${l.fails.map(esc).join("; ")}</div>` : ""}</div>`).join("")}</div></details>
-     <div class="agc-act"><button class="btn green" data-agpcard="${id}">${on ? "✓ ON MY CARD" : "+ ADD PARLAY TO MY CARD"}</button><button class="btn ghost" data-agptrack="${id}">TRACK</button></div></div>`;
+     <div class="agc-act"><button class="btn green" data-agpcard="${id}">${on ? "✓ ON MY CARD" : "+ ADD PARLAY TO MY CARD"}</button>${c.legs.some(l => l.kind === "prop") ? "" : `<button class="btn ghost" data-agptrack="${id}">TRACK</button>`}</div></div>`;
   }
   const f = agFind(c.game_id), b = f && agGame(f.g, f.lg).bets.find(x => x.label === c.label), live = b ? agSnap(f.g, f.lg, b) : null, s = live || c;
   const e = f && b ? agCardEntry(f.g, f.lg, b, 1) : null, on = e && agOnCard(e), started = new Date(c.kickoff) <= Date.now();
@@ -4273,8 +4400,8 @@ function agWireCards(root) {
 }
 
 /* ---------- the lobby: what to say ---------- */
-const AG_IDEAS = [["🎯 PICKS", ["What are the best bets on the board right now?", "Is there an official play today?", "Best NFL bet this week?", "Find me the best underdog this week"]],
-  ["🧩 PARLAYS", ["Build me a 2-leg parlay from my best picks", "Build a 3-leg parlay that pays at least +400", "Is a same-game parlay a good idea?"]],
+const AG_IDEAS = [["🎯 PICKS", ["What are the best bets on the board right now?", "Is there an official play today?", "What's the best Texas A&M bet?", "Best NFL bet this week?", "Find me the best underdog this week"]],
+  ["🧩 PARLAYS", ["Give me a parlay for the Georgia game", "Build me a 2-leg parlay from my best picks", "Build a 3-leg parlay that pays at least +400", "Is a same-game parlay a good idea?"]],
   ["🔍 GAMES", ["Which game has the biggest model edge this week?", "Break down the biggest game on the board", "Which totals look too high?"]],
   ["🧮 MY MODEL", ["Blend my model 25% toward the market", "Make my model more cautious", "Only show me unders", "Give the home team 1 extra point", "Reset my model to the base model"]],
   ["📈 MY RECORD", ["How is my agent record doing?", "Which bet types are working for me?"]],
