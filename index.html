@@ -3115,7 +3115,7 @@ async function researchLoad() {
   const rules = R.rules || {};
   const ago = t => t ? new Date(t).toLocaleString([], {weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"}) : "never";
   const applied = Object.entries(R.applied || {}).flatMap(([lg, a]) => (a.games || []).map(g => ({lg, ...g})));
-  const ctl = LOCAL_ADMIN ? `<div class="tiny muted">On this PC, use the command line: <code>python run.py research-agent</code> (run now) · <code>--pause</code> / <code>--resume</code> · <code>--rollback ID</code> · <code>--add NCAA total "-clip(wind - 12, 0, 20)" --why "wind"</code>. The online admin portal has buttons for all of these.</div>`
+  const ctl = LOCAL_ADMIN ? `<div class="tiny muted">On this PC, use the command line: <code>python run.py research-agent</code> (run now) · <code>--pause</code> / <code>--resume</code> · <code>--rollback ID</code> · <code>--add NCAA total "-clip(wind - 12, 0, 20)" --why "wind" --ref https://…</code>. The online admin portal has buttons for all of these.</div>`
     : `<div class="rs-ctl"><button class="btn gold" data-rs="run">▶ RUN RESEARCH NOW</button><button class="btn ghost" data-rs="${R.paused ? "resume" : "pause"}">${R.paused ? "▶ RESUME AGENT" : "⏸ PAUSE AGENT"}</button><span id="rsMsg" class="tiny muted"></span></div>`;
   box.innerHTML = `<div class="stats">
       <div class="stat ${R.paused ? "r" : "g"}"><div class="v">${R.paused ? "PAUSED" : "ON"}</div><div class="k">Agent status</div></div>
@@ -3140,15 +3140,19 @@ async function researchLoad() {
       <div><label>AFFECTS</label><select id="rsTg"><option value="margin">spread / moneyline</option><option value="total">total</option></select></div>
       <div style="flex:3;min-width:240px"><label>FORMULA</label><input id="rsEx" type="text" placeholder="e.g. -clip(wind - 12, 0, 20) * (dome == 0)"></div>
       <div style="flex:2;min-width:180px"><label>WHY (PLAIN WORDS)</label><input id="rsWhy" type="text" placeholder="windy games go under"></div>
+      <div style="flex:2;min-width:180px"><label>SOURCE LINK (OPTIONAL)</label><input id="rsRef" type="url" placeholder="https://… (reputable sites only)"></div>
       <div><button class="btn gold" id="rsAdd">ADD</button></div></div>
       <details class="tiny muted" style="margin-top:6px"><summary>Inputs you can use</summary><div>NCAA: ${esc((R.inputs || {}).NCAA || "")}<br>NFL: ${esc((R.inputs || {}).NFL || "")}<br>Functions: ${esc((R.inputs || {}).functions || "")}. ${esc((R.inputs || {}).sign || "")}. Write <code>{10|13|15}</code> to test several thresholds at once.</div></details>
       <div id="rsAddMsg" class="small" style="margin-top:6px"></div></div>
     <h2 class="sec sub">LAST NIGHT'S TESTS <small>every idea, best first · numbers are average points of projection error removed per game (out of sample)</small></h2>
     <div class="panel tw rs-tests"><table class="adm-t"><thead><tr><th>Result</th><th>Idea</th><th>Lg</th><th>Validation</th><th>Holdout</th><th>q</th><th>Why not</th></tr></thead><tbody>${tested.map(t => `<tr>
        <td><span class="chip ${t.status === "PROMOTED" ? "official" : /PASS/.test(t.status) ? "good" : ""}">${esc(t.status)}</span></td>
-       <td><b>${esc(t.why || "")}</b><div class="tiny muted mono">${esc(t.target)}: ${esc(t.expr)}</div><div class="tiny muted">${esc(t.source)}</div></td><td>${esc(t.league)}</td>
+       <td><b>${esc(t.why || "")}</b><div class="tiny muted mono">${esc(t.target)}: ${esc(t.expr)}</div><div class="tiny muted">${esc(t.source === "ai" ? "AI researcher" : t.source)}${t.ref ? ` · <a href="${esc(t.ref)}" target="_blank" rel="noopener noreferrer">${esc(t.ref_title || "source")}</a>` : ""}</div>${(t.inputs || []).length ? `<div class="tiny muted">data: ${t.inputs.map(esc).join(" · ")}</div>` : ""}</td><td>${esc(t.league)}</td>
        <td>${rsGain(t.val_gain)}${t.val_share != null ? `<div class="tiny muted">better in ${Math.round(t.val_share * 100)}% of seasons</div>` : ""}</td><td>${rsGain(t.hold_gain)}</td><td class="mono">${t.q ?? "–"}</td>
        <td class="tiny">${(t.why_not || []).map(esc).join("<br>")}</td></tr>`).join("")}</tbody></table></div>
+    <h2 class="sec sub">DATA SOURCES <small>every input the agent can test comes from these feeds; it cannot use anything else</small></h2>
+    <div class="panel tw"><table class="adm-t"><thead><tr><th>Source</th><th>League</th><th>Provides</th><th>Why it's trusted</th></tr></thead><tbody>${(R.sources || []).map(x => `<tr><td><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(x.name)}</b></a></td><td>${esc(x.league)}</td><td class="tiny">${esc(x.provides)}</td><td class="tiny muted">${esc(x.why)}</td></tr>`).join("")}</tbody></table>
+     <details class="tiny muted" style="margin-top:6px"><summary>Research sites the AI researcher may cite (an AI idea without one of these links is refused)</summary><div>${Object.entries(R.reputable || {}).map(([k, v]) => `<b>${esc(k)}:</b> ${v.map(esc).join(", ")}`).join("<br>")}</div></details></div>
     <h2 class="sec sub">THE RULES <small>fixed in advance, the same every night</small></h2>
     <div class="panel small"><ul class="rs-rules">
       <li>Enough evidence: the idea applies to at least ${rules.min_val_n} validation games and ${rules.min_hold_n} holdout games.</li>
@@ -3169,7 +3173,7 @@ async function researchLoad() {
     const out = $("#rsAddMsg"), expr = $("#rsEx").value.trim();
     if (!expr) return;
     if (LOCAL_ADMIN) { out.innerHTML = `On this PC run: <code>python run.py research-agent --add ${esc($("#rsLg").value)} ${esc($("#rsTg").value)} "${esc(expr)}" --why "${esc($("#rsWhy").value)}"</code>`; return; }
-    const {error} = await researchCmd("add", {league: $("#rsLg").value, target: $("#rsTg").value, expr, why: $("#rsWhy").value.trim()});
+    const {error} = await researchCmd("add", {league: $("#rsLg").value, target: $("#rsTg").value, expr, why: $("#rsWhy").value.trim(), ref: $("#rsRef").value.trim()});
     out.textContent = error ? "Couldn't queue it. Run supabase/research_admin.sql once." : "Added to the queue. It's checked for safety, then tested at the next run (within 30 minutes).";
   };
 }
